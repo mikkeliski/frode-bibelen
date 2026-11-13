@@ -7,8 +7,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \IfFileExists{norsk.ldf}
-  {\usepackage[norsk]{babel}}
-  {\usepackage[english]{babel}
+  {\usepackage[norsk,shorthands=off]{babel}}
+  {\usepackage[english,shorthands=off]{babel}
    \addto\captionsenglish{\renewcommand{\contentsname}{Innhold}%
      \renewcommand{\figurename}{Figur}\renewcommand{\tablename}{Tabell}}}
 
@@ -16,13 +16,12 @@
 \usepackage[scaled=0.92]{helvet}           % overskrifter
 \renewcommand{\ttdefault}{txtt}            % kode
 \usepackage{microtype}
-\usepackage{amssymb}
 \usepackage{pifont}
 
 \usepackage[a4paper,margin=1.8cm,top=2.1cm,bottom=2.0cm,headsep=0.5cm]{geometry}
 \usepackage[table]{xcolor}
 \usepackage{listings}
-\usepackage[most]{tcolorbox}
+\usepackage[skins,breakable]{tcolorbox}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{enumitem}

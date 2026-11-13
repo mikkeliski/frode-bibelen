@@ -82,7 +82,7 @@ Uten `latexmk` kjører du `pdflatex frode-bibelen.tex` tre ganger. Det trengs f�
 
 ### Pakker
 
-Prosjektet bruker pakkene `listings`, `tcolorbox`, `tikz`, `titlesec`, `fancyhdr`, `enumitem`, `booktabs`, `longtable`, `multicol`, `microtype`, `hyperref`, `pifont` og `amssymb`. Fontene er `charter` (brødtekst), `helvet` (overskrifter), `txfonts` (kode) og Palatino (forsiden). En full TeX Live-installasjon eller Overleaf har alt dette.
+Prosjektet bruker pakkene `listings`, `tcolorbox`, `tikz`, `titlesec`, `fancyhdr`, `enumitem`, `booktabs`, `longtable`, `multicol`, `microtype`, `hyperref` og `pifont`. Fontene er `charter` (brødtekst), `helvet` (overskrifter), `txfonts` (kode) og Palatino (forsiden). En full TeX Live-installasjon eller Overleaf har alt dette.
 
 Norsk orddeling bruker `babel-norsk` hvis pakken er installert. Mangler den, faller dokumentet tilbake til engelsk orddeling og kompilerer likevel.
 
