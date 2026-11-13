@@ -7,6 +7,25 @@ En liten nettside for å øve på **«Hva blir utskriften?»** – oppgave 1 på
 
 Hver oppgave har en fast lenke (`/oppgave/4-cf536939c6056f92`), så du kan dele en bestemt oppgave med andre.
 
+## Poengtavle
+
+Velg et kallenavn på `/poeng` for å samle poeng: **3** for riktig svar på første forsøk, **2** på andre og **1** deretter. Hver oppgave gir poeng bare én gang, og viser du fasiten, gir den ingen poeng. Tomme svar teller ikke som forsøk. Tavla viser de 50 beste, og deg selv hvis du er lenger ned.
+
+Tavla bygger på ærlighet – koden kan jo alltid kjøres på egen maskin.
+
+- **Frivillig:** bare de som blir med, får en cookie. Den er `HttpOnly` og `SameSite=Lax`, og `Secure` med `-hsts`.
+- **Ingen passord:** cookien inneholder en tilfeldig nøkkel på 256 bit. Serveren lagrer bare SHA-256 av nøkkelen, så poengfila kan ikke brukes til å utgi seg for noen.
+- **Kallenavn:** 2–20 tegn (bokstaver inkludert æøå, tall, mellomrom og `- _ .`), unike uten hensyn til store/små bokstaver.
+- **Begrenset:** maks én ny spiller per 5. minutt per IP etter de 5 første, og maks `-maks-spillere` totalt.
+- **Slett meg:** spillerne kan slette seg selv og poengene sine fra tavla.
+- **Lagring:** en JSON-fil (`-poengfil`) som skrives atomisk hvert 5. sekund ved endringer og når serveren avslutter. Uten `-poengfil` ligger tavla bare i minnet.
+
+```bash
+sudo docker stop oving
+sudo docker run --rm -v frode-oving-data:/data frode-oving -slett-spiller "Kallenavn"
+sudo docker start oving
+```
+
 ## Kjør lokalt
 
 Du trenger Go 1.25 eller nyere. Prosjektet bruker bare standardbiblioteket.
@@ -25,11 +44,14 @@ På NixOS: `nix-shell -p go --run "go run ."`
 | `-hsts` | av | Send `Strict-Transport-Security`. **Bare** når siden serveres over HTTPS. |
 | `-per-minutt` | `60` | Forespørsler per minutt per klient |
 | `-burst` | `30` | Maks forespørsler i en kort topp |
+| `-poengfil` | tom | Fil der poengtavla lagres. Tom = bare i minnet. Docker-imaget bruker `/data/poeng.json`. |
+| `-maks-spillere` | `5000` | Maks antall spillere på poengtavla |
+| `-slett-spiller` | | Slett spilleren med dette kallenavnet fra `-poengfil` og avslutt |
 
 ## Sikkerhet
 
 - **Kjører aldri kode.** Hver mal lager både C-programmet og fasiten i Go. Ingen kode blir kompilert eller kjørt på serveren – gcc brukes bare i testene.
-- **Ingen data lagres.** Ingen database, ingen cookies, ingen innlogging. En oppgave er helt bestemt av ID-en i lenken.
+- **Minimalt med data.** Ingen database og ingen innlogging. En oppgave er helt bestemt av ID-en i lenken. Det eneste som lagres, er poengtavla for dem som velger å bli med (se over).
 - **Ingen JavaScript.** Streng `Content-Security-Policy` (`default-src 'none'`), og i tillegg `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: same-origin` og `Cross-Origin-Opener-Policy`/`-Resource-Policy`.
 - **Cross-site-forespørsler avvises** med `http.CrossOriginProtection`.
 - **Alt brukerinnhold escapes** av `html/template`.
@@ -53,8 +75,9 @@ Start serveren med `-bak-proxy -hsts`. Kjør den gjerne som en låst systemd-tje
 
 ```ini
 [Service]
-ExecStart=/usr/local/bin/oving -adr 127.0.0.1:8080 -bak-proxy -hsts
+ExecStart=/usr/local/bin/oving -adr 127.0.0.1:8080 -bak-proxy -hsts -poengfil /var/lib/frode-oving/poeng.json
 DynamicUser=yes
+StateDirectory=frode-oving
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
@@ -72,8 +95,10 @@ Eller med Docker (ikke-root, skrivebeskyttet filsystem, ingen capabilities):
 ```bash
 docker build -t frode-oving .
 docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
-  -p 127.0.0.1:8080:8080 frode-oving
+  -v frode-oving-data:/data -p 127.0.0.1:8080:8080 frode-oving
 ```
+
+Poengtavla ligger i volumet `frode-oving-data` og overlever at containeren slettes og bygges på nytt. Sikkerhetskopi: `sudo docker run --rm -v frode-oving-data:/data -v "$PWD":/ut busybox cp /data/poeng.json /ut/`.
 
 ## Tester
 
@@ -102,6 +127,7 @@ oving/
 ├── maler_b.go       maler for oppgave 1B
 ├── sjekk.go         sammenligning av svar og fasit
 ├── begrenser.go     ratebegrensning per klient
+├── poengtavle.go    poengtavla og lagringen av den
 ├── maler/           HTML-maler (embeddes i programmet)
 ├── static/          CSS og ikon (embeddes i programmet)
 ├── *_test.go        tester

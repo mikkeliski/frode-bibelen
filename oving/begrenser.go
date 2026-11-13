@@ -27,9 +27,14 @@ type botte struct {
 }
 
 func nyBegrenser(perMinutt, burst, maks int) *begrenser {
+	return nyBegrenserRate(float64(perMinutt)/60, burst, maks)
+}
+
+// nyBegrenserRate tar raten i forespørsler per sekund (kan være under 1).
+func nyBegrenserRate(perSekund float64, burst, maks int) *begrenser {
 	return &begrenser{
 		botter: make(map[string]*botte),
-		rate:   float64(perMinutt) / 60,
+		rate:   perSekund,
 		burst:  float64(burst),
 		maks:   maks,
 		na:     time.Now,

@@ -8,15 +8,24 @@
 {{end}}</code></pre>
 {{end}}
 
+{{if .Spiller}}
+<p class="spillerlinje">Du spiller som <strong>{{.Spiller.Navn}}</strong> · {{.Spiller.Poeng}} poeng · {{.Spiller.Plass}}. plass
+  {{- if .AlleredeFerdig}} · <em>denne oppgaven gir ikke flere poeng</em>{{end}}</p>
+{{else}}
+<p class="liten"><a href="/poeng">Bli med på poengtavla</a> for å samle poeng.</p>
+{{end}}
+
 <form method="post" action="/oppgave/{{.Oppgave.ID}}" class="svar">
   <label for="svar">Ditt svar</label>
   <textarea id="svar" name="svar" rows="{{.Oppgave.Linjer}}" wrap="off" spellcheck="false"
     autocapitalize="off" autocomplete="off" autocorrect="off" maxlength="4000">{{.Svar}}</textarea>
   <div class="knapper">
     <button type="submit" name="handling" value="sjekk">Sjekk svaret</button>
-    <button type="submit" name="handling" value="fasit" class="sekundar">Vis fasit</button>
+    <button type="submit" name="handling" value="fasit" class="sekundar">Vis fasit{{if and .Spiller (not .AlleredeFerdig)}} (gir ingen poeng){{end}}</button>
   </div>
 </form>
+
+{{with .PoengMelding}}<p class="poengmelding{{if $.FikkPoeng}} pluss{{end}}">{{.}}</p>{{end}}
 
 {{with .Resultat}}
 <section class="resultat {{if .AlleRiktig}}riktig{{else}}feil{{end}}">

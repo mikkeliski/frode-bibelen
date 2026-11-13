@@ -1,0 +1,52 @@
+{{define "innhold"}}
+<h1>Poengtavle</h1>
+<p class="ingress">Riktig svar på første forsøk gir <strong>3 poeng</strong>, på andre forsøk <strong>2</strong>, og deretter <strong>1</strong>.
+Hver oppgave gir poeng bare én gang, og viser du fasiten, gir den ingen poeng.</p>
+
+{{with .Spiller}}
+<p class="spillerlinje">Du spiller som <strong>{{.Navn}}</strong> · {{.Poeng}} poeng · {{.Loste}} løst · {{.Plass}}. plass
+  · <a href="/ny">Ny oppgave</a></p>
+{{else}}
+<section class="blimed">
+  <h2>Bli med</h2>
+  <form method="post" action="/poeng/bli-med">
+    <label for="navn">Kallenavn</label>
+    <div class="rad">
+      <input id="navn" name="navn" maxlength="20" minlength="2" required autocomplete="nickname"
+        spellcheck="false" value="{{$.NavnVerdi}}">
+      <button type="submit">Bli med</button>
+    </div>
+    {{with $.NavnFeil}}<p class="feilmelding">{{.}}</p>{{end}}
+    <p class="liten">2–20 tegn: bokstaver, tall, mellomrom og - _ . Kallenavnet vises for alle.
+    Siden lagrer en cookie med en tilfeldig nøkkel, så den husker deg. Ingenting annet om deg lagres.</p>
+  </form>
+</section>
+{{end}}
+
+{{if .Tavle}}
+<div class="tabell">
+<table class="tavle">
+  <thead><tr><th>#</th><th>Kallenavn</th><th>Poeng</th><th>Løst</th><th>1. forsøk</th></tr></thead>
+  <tbody>
+  {{range .Tavle}}
+    <tr{{if .Meg}} class="meg"{{end}}>
+      <td>{{.Plass}}</td><td>{{.Navn}}</td><td><strong>{{.Poeng}}</strong></td><td>{{.Loste}}</td><td>{{.Prosent}} %</td>
+    </tr>
+  {{end}}
+  </tbody>
+</table>
+</div>
+<p class="liten">{{.AntallSpillere}} spiller{{if ne .AntallSpillere 1}}e{{end}} totalt. Viser de {{len .Tavle}} beste{{if .Spiller}} og deg{{end}}.</p>
+{{else}}
+<p>Ingen på tavla ennå – bli den første!</p>
+{{end}}
+
+<p class="liten">Poengtavla bygger på ærlighet: du kan alltid kjøre koden på din egen maskin, men da lurer du bare deg selv før eksamen.</p>
+
+{{if .Spiller}}
+<form method="post" action="/poeng/slett" class="slett">
+  <label><input type="checkbox" name="bekreft" value="ja" required> Ja, slett meg og poengene mine</label>
+  <button type="submit" class="sekundar">Slett meg fra poengtavla</button>
+</form>
+{{end}}
+{{end}}
