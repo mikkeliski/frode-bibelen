@@ -160,6 +160,7 @@ frode-bibelen/
 ├── kapitler/              ett kapittel per fil (01–13)
 ├── vedlegg/               ASCII-tabell og sporingsark
 ├── docs/forside.png       forhåndsvisning til README
+├── LICENSE                Beerware-lisensen
 └── LesData.h              (legg til selv – se over)
 ```
 
@@ -179,3 +180,9 @@ Innholdet bygger på Frode Haugs emneside for PROG1001: [frh.folk.ntnu.no/grprog
 Frode-bibelen er et **uoffisielt, studentlaget hjelpemiddel**. Den er verken laget eller godkjent av emneansvarlig eller NTNU. Kodemalene er egne maler skrevet i Frodes stil. `LesData.h`, oppgavetekstene og løsningsforslagene tilhører opphavspersonene og er ikke inkludert, bare lenket til.
 
 Sjekk alltid gjeldende eksamensregler for ditt semester: format, vekting og tillatte hjelpemidler kan endre seg.
+
+## Lisens
+
+Frode-bibelen er lisensiert under [Beerware-lisensen](LICENSE) (Revision 42). Du kan gjøre hva du vil med den, så lenge lisensteksten følger med. Møtes vi en dag og du synes den var verdt det, kan du spandere en øl.
+
+Lisensen gjelder bare innholdet i dette repoet. Frodes materiale som det lenkes til, er ikke omfattet.
