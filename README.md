@@ -62,6 +62,17 @@ Cc     .-'\    cC
 
 Hvert kapittel starter på ny side, og topptekstene viser hvilket kapittel du er i. Da er det lett å sette inn faneark i permen. Under oppgave 2 er det kapittel 8 og 9 du blar mest i. Under oppgave 1 er det kapittel 11 og vedleggene.
 
+## Øv på oppgave 1
+
+Mappen [`oving/`](oving/) inneholder en liten nettside skrevet i Go der du kan øve på tilfeldig genererte «Hva blir utskriften?»-oppgaver i samme stil som oppgave 1A og 1B. Du skriver inn utskriften og får svaret sjekket linje for linje. Alle fasitene er kontrollert mot gcc.
+
+```bash
+cd oving
+go run .          # åpne http://127.0.0.1:8080
+```
+
+Se [`oving/README.md`](oving/README.md) for sikkerhet, drift og hvordan du legger til nye oppgavetyper.
+
 ## Bygg PDF-en
 
 ### Lokalt
@@ -161,6 +172,7 @@ frode-bibelen/
 ├── vedlegg/               ASCII-tabell og sporingsark
 ├── docs/forside.png       forhåndsvisning til README
 ├── LICENSE                Beerware-lisensen
+├── oving/                 øvingsside for oppgave 1 (Go)
 └── LesData.h              (legg til selv – se over)
 ```
 

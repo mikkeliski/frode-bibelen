@@ -1,0 +1,88 @@
+:root {
+  --bg: #fbfaf7; --flate: #ffffff; --tekst: #1d1d1f; --svak: #5d6470;
+  --blaa: #1f4e79; --gull: #a88a2e; --kant: #dcdfe4; --kode: #f3f5f8;
+  --ok: #1e7a3c; --okbg: #e8f5ec; --galt: #b3261e; --galtbg: #fdecea;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171b; --flate: #1d2026; --tekst: #e8e8ea; --svak: #a0a6b0;
+    --blaa: #7fb0e0; --gull: #d4af37; --kant: #333842; --kode: #22262d;
+    --ok: #6fcf8b; --okbg: #1c2e22; --galt: #ff8a80; --galtbg: #3a1f1d;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--tekst);
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+a { color: var(--blaa); }
+code, pre, textarea { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+h1 { font-size: 1.7rem; margin: .5rem 0 .4rem; }
+h1 .under { color: var(--svak); font-weight: 500; font-size: 1.1rem; }
+h2 { font-size: 1.25rem; margin-top: 2rem; }
+.liten { color: var(--svak); font-size: .9rem; }
+.ingress { font-size: 1.1rem; }
+
+.topp {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  padding: .8rem 1rem; border-bottom: 3px solid var(--gull); background: var(--flate);
+}
+.logo { font-weight: 700; text-decoration: none; color: var(--blaa); font-size: 1.1rem; }
+.logo span { color: var(--gull); font-weight: 500; }
+nav { display: flex; gap: 1rem; }
+nav a { text-decoration: none; font-weight: 600; }
+
+.valg { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.kort {
+  display: block; padding: 1.1rem 1.2rem; border: 1px solid var(--kant); border-radius: 10px;
+  background: var(--flate); text-decoration: none; color: var(--tekst);
+}
+.kort:hover, .kort:focus-visible { border-color: var(--blaa); }
+.kort strong { display: block; color: var(--blaa); font-size: 1.15rem; }
+.kort span { color: var(--svak); }
+.to { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 2rem; }
+
+pre { overflow-x: auto; }
+.kode {
+  background: var(--kode); border-left: 4px solid var(--blaa); border-radius: 6px;
+  padding: .8rem 1rem; font-size: .92rem; line-height: 1.5; counter-reset: linje;
+}
+.kode .l::before {
+  counter-increment: linje; content: counter(linje);
+  display: inline-block; width: 2.2em; margin-right: 1em; text-align: right;
+  color: var(--svak); opacity: .6; user-select: none;
+}
+.svar label { display: block; font-weight: 600; margin: 1.2rem 0 .3rem; }
+textarea {
+  width: 100%; min-height: 6em; padding: .7rem .8rem; font-size: 1rem; line-height: 1.5;
+  background: var(--flate); color: var(--tekst); border: 1px solid var(--kant); border-radius: 6px;
+  resize: vertical;
+}
+textarea:focus { outline: 2px solid var(--blaa); outline-offset: 1px; }
+.knapper, .videre { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: .8rem; }
+button, .knapp {
+  font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;
+  padding: .55rem 1.1rem; border-radius: 6px; border: 1px solid var(--blaa);
+  background: var(--blaa); color: #fff;
+}
+@media (prefers-color-scheme: dark) { button, .knapp { color: #10141a; } }
+button.sekundar, .knapp.sekundar { background: transparent; color: var(--blaa); }
+
+.resultat { margin-top: 1.5rem; padding: .3rem 1rem 1rem; border-radius: 10px; border: 1px solid var(--kant); }
+.resultat.riktig { background: var(--okbg); border-color: var(--ok); }
+.resultat.riktig h2 { color: var(--ok); }
+.resultat.feil h2 { color: var(--galt); }
+.tabell { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--kant); vertical-align: top; }
+td code { white-space: pre; }
+tr.ok td:last-child { color: var(--ok); font-weight: 700; }
+tr.galt { background: var(--galtbg); }
+tr.galt td:last-child { color: var(--galt); font-weight: 700; }
+.fasit pre.ut {
+  background: var(--kode); padding: .8rem 1rem; border-radius: 6px; border-left: 4px solid var(--gull);
+}
+footer { text-align: center; color: var(--svak); font-size: .85rem; padding: 2rem 1rem; }

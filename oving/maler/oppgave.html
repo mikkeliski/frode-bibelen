@@ -1,0 +1,60 @@
+{{define "innhold"}}
+{{with .Oppgave}}
+<h1>Oppgave 1{{.Del}} <span class="under">· {{.Tittel}}</span></h1>
+<p class="liten">Lenke til akkurat denne oppgaven: <a href="/oppgave/{{.ID}}">/oppgave/{{.ID}}</a></p>
+
+<p>Hva blir utskriften fra programmet under? <strong>Utskriften har {{.Linjer}} linje{{if ne .Linjer 1}}r{{end}}.</strong></p>
+<pre class="kode"><code>{{range .KodeLinjer}}<span class="l">{{.}}</span>
+{{end}}</code></pre>
+{{end}}
+
+<form method="post" action="/oppgave/{{.Oppgave.ID}}" class="svar">
+  <label for="svar">Ditt svar</label>
+  <textarea id="svar" name="svar" rows="{{.Oppgave.Linjer}}" wrap="off" spellcheck="false"
+    autocapitalize="off" autocomplete="off" autocorrect="off" maxlength="4000">{{.Svar}}</textarea>
+  <div class="knapper">
+    <button type="submit" name="handling" value="sjekk">Sjekk svaret</button>
+    <button type="submit" name="handling" value="fasit" class="sekundar">Vis fasit</button>
+  </div>
+</form>
+
+{{with .Resultat}}
+<section class="resultat {{if .AlleRiktig}}riktig{{else}}feil{{end}}">
+  {{if .AlleRiktig}}
+    <h2>Alt riktig!</h2>
+  {{else}}
+    <h2>{{.Riktige}} av {{.Totalt}} linjer riktig</h2>
+  {{end}}
+  <div class="tabell">
+  <table>
+    <thead><tr><th>Linje</th><th>Ditt svar</th><th>Fasit</th><th></th></tr></thead>
+    <tbody>
+    {{range .Linjer}}
+      <tr class="{{if .OK}}ok{{else}}galt{{end}}">
+        <td>{{.Nr}}</td><td><code>{{.Ditt}}</code></td><td><code>{{.Fasit}}</code></td>
+        <td>{{if .OK}}✓{{else}}✗{{end}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  <p class="liten">· betyr mellomrom. Blanke på slutten av en linje telles ikke.</p>
+</section>
+{{end}}
+
+{{if .VisFasit}}
+<section class="fasit">
+  <h2>Fasit</h2>
+  <pre class="ut">{{.Oppgave.Fasit}}</pre>
+  {{with .Oppgave.Tips}}
+  <h3>Verdt å merke seg</h3>
+  <ul>{{range .}}<li>{{.}}</li>{{end}}</ul>
+  {{end}}
+</section>
+{{end}}
+
+<p class="videre">
+  <a class="knapp" href="/ny?del={{.Oppgave.Del}}">Ny oppgave 1{{.Oppgave.Del}}</a>
+  <a class="knapp sekundar" href="/ny">Tilfeldig oppgave</a>
+</p>
+{{end}}

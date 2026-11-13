@@ -1,0 +1,41 @@
+{{define "innhold"}}
+<h1>Hva blir utskriften?</h1>
+<p class="ingress">Øv på oppgave 1 med tilfeldig genererte C-program i samme stil som på eksamen.
+Skriv nøyaktig det programmet skriver ut, og få svaret sjekket linje for linje.</p>
+
+<div class="valg">
+  <a class="kort" href="/ny?del=A">
+    <strong>Oppgave 1A</strong>
+    <span>Tekst, pekere og <code>string.h</code></span>
+  </a>
+  <a class="kort" href="/ny?del=B">
+    <strong>Oppgave 1B</strong>
+    <span>Struct, funksjoner og parametre</span>
+  </a>
+  <a class="kort" href="/ny">
+    <strong>Tilfeldig</strong>
+    <span>Fra hvilken som helst mal</span>
+  </a>
+</div>
+
+<h2>Slik løser du dem</h2>
+<ol>
+  <li>Skriv teksten med indekser under (sporingsarket i vedlegg B i bibelen).</li>
+  <li>Hold en tabell over alle variable og pekere, og oppdater den for hver setning.</li>
+  <li>Ta én <code>printf</code> om gangen. Mellomrom og bredder (<code>%3i</code>) teller.</li>
+  <li>Sjekk at du har like mange linjer som oppgaven sier.</li>
+</ol>
+
+<div class="to">
+  <section>
+    <h2>Maler i 1A</h2>
+    <ul>{{range .MalerA}}<li>{{.}}</li>{{end}}</ul>
+  </section>
+  <section>
+    <h2>Maler i 1B</h2>
+    <ul>{{range .MalerB}}<li>{{.}}</li>{{end}}</ul>
+  </section>
+</div>
+<p class="liten">Hver mal trekker nye tekster, tall og operasjoner, så du får en ny variant hver gang.
+Alle fasitene er kontrollert ved å kompilere programmene med gcc.</p>
+{{end}}
