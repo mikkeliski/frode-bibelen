@@ -1,0 +1,155 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 4 C-grunnlag: oppslag
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ===================================================== 4 C-GRUNNLAG ========
+\kapittel{C-grunnlag: oppslag}
+
+\subsection{Datatyper og variable}
+\begin{center}
+\begin{tabular}{@{}L{3.2cm}L{2.0cm}L{10.4cm}@{}}
+\toprule
+\textbf{Type} & \textbf{printf} & \textbf{Merk} \\
+\midrule
+\cc{int} & \cc{\%i}, \cc{\%d} & Heltall. \cc{7/2} blir \cc{3} (heltallsdivisjon). \\
+\cc{float} & \cc{\%f}, \cc{\%.2f} & Desimaltall. \cc{\%f} skriver \textbf{6 desimaler}: \cc{3.500000}. \\
+\cc{char} & \cc{\%c} & Ett tegn = et lite heltall (ASCII). \cc{'A'} er 65, \cc{'a'} er 97, \cc{'0'} er 48. \\
+\cc{char t[80]} / \cc{char* t} & \cc{\%s} & Tekst som slutter med \cc{'\bs 0'}. Se kapittel 5. \\
+\cc{bool} & \cc{\%i} & Krever \cc{<stdbool.h>}. \cc{true}/\cc{false} skrives ut som \cc{1}/\cc{0}. \\
+\cc{enum Type} & \cc{\%i} & Verdiene er heltall \cc{0, 1, 2, \dots} i deklarasjonsrekkefølge. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{felle}[{Initialisering og levetid}]
+\begin{itemize}
+  \item \textbf{Globale} variable og arrayer er automatisk nullstilt. \textbf{Lokale} er \emph{ikke} -- de inneholder søppel til du gir dem verdi.
+  \item \lstinline|int antall[31] = { 0 };| nullstiller \emph{hele} arrayen (resten fylles med 0).
+  \item En lokal variabel (eller parameter) med samme navn som en global \textbf{skygger} for den globale inni funksjonen.
+  \item Lokale variable forsvinner når funksjonen er ferdig. Memory fra \cc{malloc} lever til du sier \cc{free}.
+\end{itemize}
+\end{felle}
+
+\subsection{Operatorer}
+\begin{multicols}{2}
+\textbf{Aritmetikk:} \cc{+ - * / \%} og \cc{+= -= *= /= \%=}\\
+\textbf{Relasjon:} \cc{< <= > >= == !=} (gir 1 eller 0)\\
+\textbf{Logiske:} \cc{\&\&} (og), \cc{||} (eller), \cc{!} (ikke)\\
+\textbf{Betinget:} \cc{betingelse ? verdi1 : verdi2}
+
+\columnbreak
+\begin{kode}
+int a = 7, b = 2;
+a / b          //  3    (heltall)
+a % b          //  1    (rest)
+(float) a / b  //  3.5  (cast FØR deling)
+(float)(a / b) //  3.0  (for sent!)
+a / 2.0        //  3.5
+\end{kode}
+\end{multicols}
+
+\textbf{\cc{++} og \cc{--}} -- \emph{prefiks} endrer først og bruker ny verdi; \emph{postfiks} bruker gammel verdi og endrer etterpå:
+\begin{kode}
+int i = 5, x;
+x = i++;     //  x = 5,  i = 6        x = ++i;   //  x = 7,  i = 7
+gKunder[gAntallKunder++] = ny;   //  Lagrer på [gammel verdi], øker så telleren.
+gKunder[nr-1] = gKunder[--gAntallKunder];  //  Minker FØRST, henter så siste.
+\end{kode}
+
+\begin{center}
+\begin{tabular}{@{}L{0.6cm}L{6.5cm}L{8.5cm}@{}}
+\toprule
+\multicolumn{3}{@{}l}{\textbf{Presedens} (høyest først -- sett heller parenteser enn å gjette)} \\
+\midrule
+1 & \cc{() [] -> .} \ \ postfiks \cc{++ --} & \cc{*t++} er \cc{*(t++)}: les \cc{*t}, flytt \cc{t} etterpå \\
+2 & \cc{! ++ -- * \& (type) sizeof} \ (unær) & \cc{*p->x} er \cc{*(p->x)}; \ \cc{!a == b} er \cc{(!a) == b} \\
+3 & \cc{* / \%} & \\
+4 & \cc{+ -} & \cc{*t+1} er \cc{(*t)+1}, ikke \cc{*(t+1)} \\
+5 & \cc{< <= > >=} & \\
+6 & \cc{== !=} & \\
+7 & \cc{\&\&} & Stopper ved første usanne (kortslutning) \\
+8 & \cc{||} & Stopper ved første sanne (kortslutning) \\
+9 & \cc{?:} & \\
+10 & \cc{= += -= *= /= \%=} & Høyre mot venstre: \cc{a = b = 0;} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Utskrift og innlesning}
+\begin{center}
+\begin{tabular}{@{}L{3.0cm}L{5.4cm}L{7.2cm}@{}}
+\toprule
+\textbf{Format} & \textbf{Eksempel} & \textbf{Resultat} (\textvisiblespace\ = mellomrom) \\
+\midrule
+\cc{\%i} / \cc{\%d} & \cc{printf("[\%i]", 42)} & \cc{[42]} \\
+\cc{\%5i} & \cc{printf("[\%5i]", 42)} & \cc{[\textvisiblespace\textvisiblespace\textvisiblespace 42]} (høyrejustert, bredde 5) \\
+\cc{\%-5i} & \cc{printf("[\%-5i]", 42)} & \cc{[42\textvisiblespace\textvisiblespace\textvisiblespace]} (venstrejustert) \\
+\cc{\%02i} & \cc{printf("\%02i:\%02i", 9, 5)} & \cc{09:05} (nuller foran -- datoer/klokkeslett) \\
+\cc{\%f} & \cc{printf("\%f", 3.5)} & \cc{3.500000} \\
+\cc{\%.2f}, \cc{\%8.2f} & \cc{printf("[\%8.2f]", 3.5)} & \cc{[\textvisiblespace\textvisiblespace\textvisiblespace\textvisiblespace 3.50]} \\
+\cc{\%c} & \cc{printf("\%c\%c", 'O', 'K')} & \cc{OK} \\
+\cc{\%s}, \cc{\%-10s} & \cc{printf("[\%-6s]", "Ola")} & \cc{[Ola\textvisiblespace\textvisiblespace\textvisiblespace]} \\
+\cc{\%\%} & \cc{printf("\%i\%\%", 50)} & \cc{50\%} \\
+\cc{\bs n \bs t \bs\bs\ \bs" \bs'} & & linjeskift, tabulator, \cc{\bs}, \cc{"}, \cc{'} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{felle}[{scanf}]
+\begin{itemize}
+  \item \cc{\&} foran enkle variable: \lstinline|scanf("%i", &tall);| -- men \textbf{ikke} foran en \cc{char}-array: \lstinline|scanf("%s", navn);|
+  \item \cc{\%s} leser bare til første blanke. Hele linjer: \cc{fgets} / \cc{lesText}.
+  \item \lstinline|scanf(" %c", &tegn);| -- mellomrommet foran \cc{\%c} hopper over gamle \cc{'\bs n'}.
+\end{itemize}
+\end{felle}
+
+\subsection{Løkker og valg}
+\begin{multicols}{2}
+\begin{kode}
+for (int i = 0;  i < n;  i++)  { ... }
+
+while (betingelse)  { ... }   //  0+ ganger
+
+do  { ... } while (betingelse);  //  1+ ganger
+
+if (a > b)  ...
+else if (a == b)  ...
+else  ...
+\end{kode}
+\columnbreak
+\begin{kode}
+switch (tegn)  {     //  int, char eller enum
+  case 'A':
+  case 'a':  ...;  break;  //  'A' og 'a'
+  case 'B':  ...;  break;
+  default:   ...;  break;
+}
+//  break;    - ut av løkka/switch
+//  continue; - rett til neste runde
+\end{kode}
+\end{multicols}
+
+\begin{felle}[{Klassikere}]
+\begin{itemize}
+  \item \lstinline|if (x = 5)| tilordner (alltid sann). Sammenligning er \lstinline|==|.
+  \item \lstinline|for (...);| med semikolon -- løkka gjør ingenting, blokka kjøres én gang.
+  \item \cc{switch} uten \cc{break} \textbf{faller gjennom} til neste \cc{case}.
+  \item \cc{else} hører til nærmeste \cc{if} uten krøllparenteser -- bruk \cc{\{ \}} ved tvil.
+  \item \cc{<} vs.\ \cc{<=} i løkkegrenser: \cc{for (i = 0; i <= 52; i++)} kjører 53 ganger.
+\end{itemize}
+\end{felle}
+
+\subsection{Arrayer}
+\begin{kode}
+int   tall[10];                      //  Indeks 0..9. Ingen grensesjekk i C!
+float pris[3] = { 9.90, 19.90, 29.90 };
+int   tabell[7][24];                 //  F.eks. 7 dager x 24 timer:  tabell[dag][time]
+char  navn[][20] = { "Ola", "Kari", "Per" };   //  navn[1] = "Kari",  navn[1][0] = 'K'
+const char* typeTekst[] = { "Privat", "Bedrift" };  //  Oppslag: typeTekst[k->type]
+
+for (int d = 0;  d < 7;  d++)        //  Gå gjennom 2D-array:
+  for (int t = 0;  t < 24;  t++)
+    sum += tabell[d][t];
+\end{kode}

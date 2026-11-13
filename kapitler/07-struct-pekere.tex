@@ -1,0 +1,89 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 7 Struct, pekere og memory
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% =================================================== 7 STRUCT/PEKERE =======
+\kapittel{Struct, pekere og memory}
+
+\subsection{Pekere på én side}
+\begin{center}
+\begin{tabular}{@{}L{3.6cm}L{12.0cm}@{}}
+\toprule
+\cc{int* p;} & Lager en peker som kan peke på en \cc{int}. \\
+\cc{p = \&x;} & \cc{\&x} = adressen til \cc{x}. Nå peker \cc{p} på \cc{x}. \\
+\cc{*p = 7;} & \cc{*p} = verdien der \cc{p} peker (her: setter \cc{x} til 7). \\
+\cc{t == \&t[0]} & Navnet på en array \textbf{er} adressen til første element. \\
+\cc{*(t+i) == t[i]} & Pekeraritmetikk: \cc{t+i} peker \cc{i} plasser lenger ut. \\
+\cc{p->navn} & Medlem via peker til struct. Samme som \cc{(*p).navn}. \\
+\cc{s.navn} & Medlem i en struct-\emph{variabel} (ikke peker). \\
+\cc{NULL} & «Peker ikke på noe». \cc{if (p)} = \cc{if (p != NULL)}. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{\texorpdfstring{\cc{malloc}}{malloc} og \texorpdfstring{\cc{free}}{free}}
+\begin{kode}
+struct Kunde* ny = (struct Kunde*) malloc(sizeof(struct Kunde));   //  Én struct.
+char* t  = (char*) malloc((strlen(buffer) + 1) * sizeof(char));    //  Én tekst.
+int*  a  = (int*)  malloc(n * sizeof(int));                        //  Array med n int.
+
+free(kunde->navn);       //  1) Først det som er malloc-et INNI structen,
+free(kunde);             //  2) så selve structen.   (Omvendt rekkefølge = minnelekkasje.)
+\end{kode}
+
+\subsection{Array \emph{av} structer vs.\ array \emph{med pekere til} structer}
+Begge varianter har vært på eksamen (S26 hadde begge i samme program).
+\begin{center}
+\begin{tabular}{@{}L{3.0cm}L{6.1cm}L{6.5cm}@{}}
+\toprule
+ & \textbf{Array av structer} & \textbf{Array med pekere (vanligst)} \\
+\midrule
+Deklarasjon & \cc{struct Glass gGlass[MAXGLASS];} & \cc{struct Kunde* gKunder[MAXKUNDER];} \\
+Tilgang & \cc{gGlass[i].bredde} & \cc{gKunder[i]->navn} \\
+Sende til funksjon & \cc{glassSkriv(gGlass[i])} (kopi) eller \newline \cc{glassLes(\&gGlass[i])} (original) & \cc{kundeSkrivData(gKunder[i])} \newline (er allerede en peker) \\
+Opprette ny & ingenting -- plassen finnes & \cc{gKunder[n] = (struct Kunde*)} \newline \cc{\ \ malloc(sizeof(struct Kunde));} \\
+Slette & ikke aktuelt / flytt innhold & \cc{free} inni, \cc{free} structen, flytt siste peker inn \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Typiske ting \emph{inni} en struct}
+\begin{kode}
+struct Fugl {
+  char* navn;                   //  Dynamisk tekst.
+  int   antObs;                 //  Teller  +  array som brukes 0..antObs-1
+  int   observasjoner[365];     //    (som gKunder/gAntallKunder, men inni structen).
+  bool  dag[31];                //  Ja/nei for hver dag  ->  dag[d-1] for dag nr. d
+  int   bankNr[2];              //  INDEKSER inn i en annen global array (relasjon):
+};                              //    gBanker[ kunde->bankNr[0] ]->navn
+
+struct Kunde {
+  int   glass[MAXGLASS];        //  Antall bestilt av glass nr. i (S26): én teller
+};                              //    per element i en annen global array.
+\end{kode}
+
+\begin{tips}[{Kopi av struct er «grunn»}]
+\lstinline|*s1 = *s2;| kopierer alle medlemmene -- men for en \cc{char*} kopieres bare \emph{pekeren}.
+Begge structene peker da på samme tekst. (\cc{char navn[30]} inni structen blir derimot kopiert.)
+\end{tips}
+
+\subsection{Datoer og klokkeslett som heltall}\label{sec:dato}
+Frode lagrer ofte dato som \cc{MMDD} (H22, H23, S26) og klokkeslett som \cc{TTMM} (H22):
+\begin{kode}
+int dato = 1224;                        //  24. desember
+int mnd  = dato / 100;                  //  12
+int dag  = dato % 100;                  //  24
+printf("%02i/%02i", dag, mnd);          //  24/12
+
+int dato2 = mnd * 100 + dag;            //  Tilbake til MMDD.
+if (dato1 < dato2)  ...                 //  MMDD kan sammenlignes direkte (samme år).
+
+int klokken = 1430;                     //  14:30
+int minutterEtterMidnatt = (klokken / 100) * 60 + klokken % 100;   //  870
+
+const int DAGERIMND[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+int dagNr = dag;                                    //  Dag nummer i året (1..365):
+for (int m = 0;  m < mnd-1;  m++)  dagNr += DAGERIMND[m];
+\end{kode}

@@ -1,0 +1,284 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 8 Maler: standardoperasjoner i oppgave 2
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ========================================================== 8 MALER ========
+\kapittel{Maler: standardoperasjoner i oppgave 2}
+
+Alle malene bruker skjelettet fra kapittel 3 (\cc{gKunder}, \cc{gAntallKunder}, \cc{struct Kunde}).
+Bytt navn, behold strukturen. Frode unngår \emph{æøå} i \cc{printf}-tekster (konsollen viser dem ofte feil): skriv \cc{aa}, \cc{o}, \cc{ae}.
+
+\subsection{Skriv alle}\label{sec:skrivalle}
+\begin{kode}
+void skrivAlleKunder()  {
+  if (gAntallKunder > 0)  {                        //  Kunder finnes:
+     printf("\n\tAlle kundene:\n");
+     for (int i = 0;  i < gAntallKunder;  i++)  {
+         printf("\t%3i:  ", i+1);                   //  Nummer for brukeren.
+         kundeSkrivData(gKunder[i]);                //  Hver skriver seg selv.
+     }
+  } else
+     printf("\n\tIngen kunder registrert enda!\n");
+}
+
+void kundeSkrivData(const struct Kunde* kunde)  {
+  printf("%-25s  tlf: %8i  %-7s  saldo: %9.2f\n", kunde->navn, kunde->tlf,
+         (kunde->type == Privat) ? "Privat" : "Bedrift", kunde->saldo);
+}
+\end{kode}
+
+\subsection{Ny}\label{sec:ny}
+\begin{kode}
+void nyKunde()  {
+  if (gAntallKunder < MAXKUNDER)  {                //  Plass til flere:
+     gKunder[gAntallKunder] = (struct Kunde*) malloc(sizeof(struct Kunde));
+     kundeLesData(gKunder[gAntallKunder]);         //  Leser selv sine data.
+     gAntallKunder++;                              //  Én flere.
+     printf("\n\tNy kunde registrert som nr.%i\n", gAntallKunder);
+  } else                                           //  Fullt:
+     printf("\n\tFullt med %i kunder allerede!\n", MAXKUNDER);
+}
+\end{kode}
+
+\subsection{Les data inn i én struct}\label{sec:lesdata}
+\begin{kode}
+void kundeLesData(struct Kunde* kunde)  {
+  kunde->navn  = lagOgLesText("\tNavn");                  //  Tekst (malloc).
+  kunde->tlf   = lesInt("\tTelefon", 10000000, 99999999); //  Heltall.
+  kunde->type  = lesType();                               //  enum - se 8.10.
+  kunde->saldo = lesFloat("\tSaldo", 0, 1000000);         //  Desimaltall.
+
+  //  Har structen en array og/eller teller? NULLSTILL dem (malloc gir søppel):
+  //  kunde->antBest = 0;
+  //  for (int i = 0;  i < MAXGLASS;  i++)  kunde->glass[i] = 0;
+}
+\end{kode}
+
+\subsection{Ny med unikt navn (sjekk duplikat først)}\label{sec:unik}
+\begin{kode}
+int finnKunde(const char* navn)  {                 //  Indeks eller -1.
+  for (int i = 0;  i < gAntallKunder;  i++)
+      if (!strcmp(gKunder[i]->navn, navn))  return i;
+  return -1;
+}
+
+void nyKunde2()  {
+  char* navn;
+  if (gAntallKunder < MAXKUNDER)  {
+     navn = lagOgLesText("\tNavn");
+     if (finnKunde(navn) == -1)  {                 //  Navnet er ledig:
+        gKunder[gAntallKunder] = (struct Kunde*) malloc(sizeof(struct Kunde));
+        gKunder[gAntallKunder]->navn = navn;       //  Bruker allerede lest navn,
+        kundeLesResten(gKunder[gAntallKunder]);    //    leser resten (uten navn).
+        gAntallKunder++;
+     } else  {                                     //  Navnet finnes:
+        printf("\n\tFinnes allerede en kunde med dette navnet!\n");
+        free(navn);                                //  Skal IKKE lagres - frigi!
+     }
+  } else
+     printf("\n\tFullt med %i kunder allerede!\n", MAXKUNDER);
+}
+\end{kode}
+
+\subsection{Velg én og skriv alt om den}\label{sec:velgen}
+\begin{kode}
+void skrivEnKunde()  {                             //  Valg via NUMMER:
+  if (gAntallKunder > 0)  {
+     int nr = lesInt("\tKundenr", 1, gAntallKunder);
+     kundeSkrivAlt(gKunder[nr-1]);                 //  nr-1 = indeks!
+  } else
+     printf("\n\tIngen kunder registrert enda!\n");
+}
+
+void skrivEnKundeNavn()  {                         //  Valg via NAVN:
+  char buffer[STRLEN];
+  int  indeks;
+  lesText("\tNavn", buffer, STRLEN);
+  indeks = finnKunde(buffer);
+  if (indeks != -1)  kundeSkrivAlt(gKunder[indeks]);
+  else  printf("\n\tIngen kunde med navnet '%s'!\n", buffer);
+}
+\end{kode}
+
+\subsection{Endre / registrere noe på én}\label{sec:endre}
+\begin{kode}
+void endreSaldo()  {
+  int nr;
+  if (gAntallKunder > 0)  {
+     nr = lesInt("\tEndre saldo for kundenr (0 = angre)", 0, gAntallKunder);
+     if (nr != 0)  kundeEndreSaldo(gKunder[nr-1]);
+     else          printf("\n\tOK - ingen endring.\n");
+  } else
+     printf("\n\tIngen kunder registrert enda!\n");
+}
+
+void kundeEndreSaldo(struct Kunde* kunde)  {
+  printf("\n\tNaavaerende saldo: %.2f\n", kunde->saldo);
+  kunde->saldo = lesFloat("\tNy saldo", 0, 1000000);
+}
+
+void kundeEndreNavn(struct Kunde* kunde)  {        //  Bytte ut en dynamisk tekst:
+  free(kunde->navn);                               //    frigi gammel FØRST,
+  kunde->navn = lagOgLesText("\tNytt navn");       //    lag og les ny.
+}
+
+void kundeNyBestilling(struct Kunde* kunde)  {     //  Legge til i array INNI struct:
+  if (kunde->antBest < MAXBEST)
+     kunde->best[kunde->antBest++] = lesInt("\tVarenr", 1, 999);
+  else
+     printf("\n\tFullt med bestillinger for denne kunden!\n");
+}
+\end{kode}
+
+\subsection{Fjern / slett én}\label{sec:slett}
+\begin{kode}
+void fjernKunde()  {
+  int nr;
+  if (gAntallKunder > 0)  {
+     nr = lesInt("\tFjern kundenr (0 = angre)", 0, gAntallKunder);
+     if (nr != 0)  {
+        kundeFrigi(gKunder[nr-1]);                 //  1) Frigi memory INNI structen.
+        free(gKunder[nr-1]);                       //  2) Frigi selve structen.
+        gKunder[nr-1] = gKunder[gAntallKunder-1];  //  3) Flytt SISTE inn i hullet.
+        gKunder[gAntallKunder-1] = NULL;           //     (ryddig, ikke påkrevd)
+        gAntallKunder--;                           //  4) Én færre.
+        printf("\n\tKunden er fjernet.\n");
+     } else
+        printf("\n\tOK - ingen kunde ble fjernet.\n");
+  } else
+     printf("\n\tIngen kunder registrert enda!\n");
+}
+
+void kundeFrigi(struct Kunde* kunde)  {
+  free(kunde->navn);                               //  ALLE char* som er malloc-et.
+}
+//  Frodes kompakte variant av 3) og 4):   gKunder[nr-1] = gKunder[--gAntallKunder];
+
+//  Må REKKEFØLGEN bevares? Skyv alle bak hullet ett hakk fram i stedet for 3):
+for (int i = nr-1;  i < gAntallKunder-1;  i++)  gKunder[i] = gKunder[i+1];
+gAntallKunder--;
+\end{kode}
+
+\subsection{Skriv alle som matcher}\label{sec:match}
+\begin{kode}
+void skrivAlleAvType()  {
+  enum Type type;
+  bool funn = false;                               //  Foreløpig ingen funn.
+  if (gAntallKunder > 0)  {
+     type = lesType();
+     for (int i = 0;  i < gAntallKunder;  i++)
+         if (kundeErType(gKunder[i], type))  {     //  Match:
+            funn = true;
+            printf("\t%3i:  ", i+1);
+            kundeSkrivData(gKunder[i]);
+         }
+     if (!funn)  printf("\n\tIngen kunder av denne typen!\n");
+  } else
+     printf("\n\tIngen kunder registrert enda!\n");
+}
+
+bool kundeErType(const struct Kunde* kunde, const enum Type type)  {
+  return (kunde->type == type);
+}
+
+//  Søk på DEL av navn i stedet:
+char sok[STRLEN];
+lesText("\tSok etter (del av) navn", sok, STRLEN);
+... if (strstr(gKunder[i]->navn, sok))  { ... }
+\end{kode}
+
+\subsection{Statistikk: sum, snitt, størst, flest}\label{sec:statistikk}
+\begin{kode}
+//  a) Sum og gjennomsnitt  (pass på heltallsdivisjon og deling på 0):
+float sum = 0;
+for (int i = 0;  i < gAntallKunder;  i++)  sum += gKunder[i]->saldo;
+if (gAntallKunder > 0)  printf("\tSnitt: %.2f\n", sum / gAntallKunder);
+//    int-summer:  (float) sumInt / antall          prosent:  100.0 * del / total
+
+//  b) Største (husk INDEKSEN, ikke bare verdien):
+int maksInd = 0;
+for (int i = 1;  i < gAntallKunder;  i++)
+    if (gKunder[i]->saldo > gKunder[maksInd]->saldo)  maksInd = i;
+kundeSkrivData(gKunder[maksInd]);
+
+//  c) Tell opp i en hjelpearray, finn så den største (H23, H24, H25, S25):
+void dagMedFlest()  {
+  int antall[ANTDAG] = { 0 };            //  ANTDAG må være #define for = { 0 }.
+  int storst = -1, dagen = -1;
+  for (int i = 0;  i < gAntallDeltagere;  i++)     //  For hver deltager,
+      for (int d = 0;  d < ANTDAG;  d++)           //    og hver dag:
+          if (gDeltagere[i]->dag[d])  antall[d]++; //  Tell opp.
+  for (int d = 0;  d < ANTDAG;  d++)               //  Finn største:
+      if (antall[d] > storst)  {  storst = antall[d];  dagen = d;  }
+  printf("\tDag %i har flest: %i stk\n", dagen+1, storst);
+
+  printf("\tAlle dager med %i stk:", storst);      //  Kan være FLERE like store:
+  for (int d = 0;  d < ANTDAG;  d++)
+      if (antall[d] == storst)  printf("  %i", d+1);
+  printf("\n");
+}
+
+//  d) Tell per enum-verdi - enum-verdien ER indeksen:
+int antPerType[2] = { 0 };
+for (int i = 0;  i < gAntallKunder;  i++)  antPerType[gKunder[i]->type]++;
+\end{kode}
+
+\begin{tips}[{La struct-funksjonen gjøre tellejobben}]
+Frode sender ofte telle-arrayen inn til struct-funksjonen, som legger til «sine» tall:\par
+\lstinline|void fuglTellObservasjoner(const struct Fugl* fugl, int antall[]);|\par
+Arrayen er original (ikke kopi), så økningene blir med tilbake til kalleren.
+\end{tips}
+
+\subsection{\texorpdfstring{\cc{enum}}{enum}: lese, skrive, konvertere}\label{sec:enum}
+\begin{kode}
+enum Type lesType()  {                       //  To verdier: ternær operator.
+  char tegn;
+  do  {
+    tegn = lesChar("\tType (P = Privat, B = Bedrift)");
+  } while (tegn != 'P'  &&  tegn != 'B');    //  Godtar KUN lovlige bokstaver.
+  return (tegn == 'P') ? Privat : Bedrift;
+}
+
+enum Kategori tilKategori(const char tegn)  {   //  Mange verdier: switch.
+  switch (tegn)  {
+    case 'H':  return Hentes;
+    case 'L':  return Lagres;
+    case 'S':  return Selges;
+    default:   return Ubestemt;
+  }
+}
+
+void skrivType(const enum Type type)  {      //  enum -> tekst med switch,
+  switch (type)  {
+    case Privat:   printf("Privat ");   break;
+    case Bedrift:  printf("Bedrift");   break;
+  }
+}
+const char* gTypeTekst[] = { "Privat", "Bedrift" };   //  ... eller med tekst-array
+printf("%s", gTypeTekst[kunde->type]);                //  (samme rekkefølge som enum).
+\end{kode}
+
+\subsection{Sortering (boblesortering av pekerne)}\label{sec:sortering}
+\begin{kode}
+void sorterKunderPaaNavn()  {
+  struct Kunde* hjelp;
+  for (int i = 0;  i < gAntallKunder-1;  i++)
+      for (int j = 0;  j < gAntallKunder-1-i;  j++)
+          if (strcmp(gKunder[j]->navn, gKunder[j+1]->navn) > 0)  {  //  Feil rekkefølge:
+             hjelp = gKunder[j];   gKunder[j] = gKunder[j+1];   gKunder[j+1] = hjelp;
+          }
+}
+//  Tall, synkende:   if (gKunder[j]->saldo < gKunder[j+1]->saldo)  { ...bytt... }
+\end{kode}
+
+\subsection{Slett alt ved programslutt}
+\begin{kode}
+void slettAlleKunder()  {
+  for (int i = 0;  i < gAntallKunder;  i++)  {
+      kundeFrigi(gKunder[i]);   free(gKunder[i]);
+  }
+  gAntallKunder = 0;
+}
+\end{kode}

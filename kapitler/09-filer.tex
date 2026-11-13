@@ -1,0 +1,144 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 9 Filer
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ========================================================== 9 FILER ========
+\kapittel{Filer}
+
+\begin{regel}[{Gullregel: filformat}]
+Les \textbf{nøyaktig} det formatet oppgaven beskriver -- og skriv \textbf{nøyaktig} det samme når du skriver til fil.
+\cc{xxxLesFraFil} og \cc{xxxSkrivTilFil} skal være speilbilder av hverandre.
+\end{regel}
+
+\begin{center}
+\begin{tabular}{@{}L{5.6cm}L{10.0cm}@{}}
+\toprule
+\textbf{På fila står \dots} & \textbf{Les med \dots} \\
+\midrule
+ett tall & \cc{fscanf(inn, "\%i", \&x);} \\
+flere tall/tegn på samme linje & \cc{fscanf(inn, "\%i \%c \%f", \&(k->tlf), \&tegn, \&(k->saldo));} \\
+blank før tekst / \cc{'\bs n'} etter tall & \cc{getc(inn);} \ (leser og forkaster \emph{ett} tegn) \\
+tekst ut linja (kan ha blanke) & \cc{fgets(buffer, STRLEN, inn);} \cc{buffer[strlen(buffer)-1] = '\bs 0';} \\
+ett ord (ingen blanke) & \cc{fscanf(inn, "\%s", buffer);} \\
+\cc{0}/\cc{1} som skal bli \cc{bool} & \cc{fscanf(inn, "\%i", \&kan);} \cc{k->dag[i] = (kan == 1);} \\
+bokstav som skal bli \cc{enum} & \cc{fscanf(inn, " \%c", \&tegn);} \cc{k->type = (tegn == 'P') ? Privat : Bedrift;} \\
+antall + så mange verdier & \cc{fscanf} antallet, deretter en \cc{for}-løkke med \cc{fscanf}, til slutt \cc{getc}. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Les fra fil -- antallet står først}\label{sec:lesfil}
+Filformat (eksempel):
+\begin{kode}[language={},backgroundcolor=\color{white}]
+3
+91234567 P 250.00 Ola Hansen
+45678901 B 0.00 Fjellsport AS
+99887766 P 99.50 Kari Nordmann
+\end{kode}
+\begin{kode}
+void lesFraFil()  {
+  FILE* innfil = fopen("KUNDER.DTA", "r");             //  Åpner for lesing.
+  if (innfil)  {                                       //  Filen finnes:
+     fscanf(innfil, "%i", &gAntallKunder);             //  Leser antallet,
+     getc(innfil);                                     //    og '\n' etter det.
+     for (int i = 0;  i < gAntallKunder;  i++)  {      //  Lager og leser alle:
+         gKunder[i] = (struct Kunde*) malloc(sizeof(struct Kunde));
+         kundeLesFraFil(innfil, gKunder[i]);           //  Leser selv.
+     }
+     fclose(innfil);                                   //  Lukker INNI if-en.
+     printf("\n\tKundene er lest inn fra 'KUNDER.DTA'.\n");
+  } else
+     printf("\n\tFant ikke filen 'KUNDER.DTA'!\n");
+}
+
+void kundeLesFraFil(FILE* inn, struct Kunde* kunde)  {
+  char buffer[STRLEN];
+  char tegn;
+  fscanf(inn, "%i %c %f", &(kunde->tlf), &tegn, &(kunde->saldo));
+  getc(inn);                                           //  Forkaster ' ' før navnet.
+  fgets(buffer, STRLEN, inn);                          //  Resten av linja = navn.
+  buffer[strlen(buffer)-1] = '\0';                     //  Fjerner '\n'.
+  kunde->navn = (char*) malloc((strlen(buffer)+1) * sizeof(char));
+  strcpy(kunde->navn, buffer);
+  kunde->type = (tegn == 'P') ? Privat : Bedrift;      //  Bokstav -> enum.
+}
+\end{kode}
+
+\subsection{Les fra fil -- ukjent antall (les til slutten)}
+Filformat: navn på én linje, resten på neste. Les \textbf{første post før løkka} og \textbf{neste post sist i løkka} (H23).
+\begin{kode}
+void lesFraFil2()  {
+  char buffer[STRLEN];
+  FILE* innfil = fopen("KUNDER.DTA", "r");
+  if (innfil)  {
+     gAntallKunder = 0;
+     fgets(buffer, STRLEN, innfil);                    //  Prøver å lese 1. navn.
+     while (!feof(innfil)  &&  gAntallKunder < MAXKUNDER)  {
+       buffer[strlen(buffer)-1] = '\0';
+       gKunder[gAntallKunder] = (struct Kunde*) malloc(sizeof(struct Kunde));
+       kundeLesFraFil2(innfil, gKunder[gAntallKunder], buffer);
+       gAntallKunder++;
+       fgets(buffer, STRLEN, innfil);                  //  Prøver å lese neste navn.
+     }
+     fclose(innfil);
+  } else
+     printf("\n\tFant ikke filen 'KUNDER.DTA'!\n");
+}
+
+void kundeLesFraFil2(FILE* inn, struct Kunde* kunde, const char* navn)  {
+  char tegn;
+  kunde->navn = (char*) malloc((strlen(navn)+1) * sizeof(char));
+  strcpy(kunde->navn, navn);
+  fscanf(inn, "%i %c %f", &(kunde->tlf), &tegn, &(kunde->saldo));
+  getc(inn);                                           //  Forkaster '\n'.
+  kunde->type = (tegn == 'P') ? Privat : Bedrift;
+}
+\end{kode}
+
+\subsection{Skriv til fil}\label{sec:skrivfil}
+\begin{kode}
+void skrivTilFil()  {
+  FILE* utfil = fopen("KUNDER.DTA", "w");              //  "w" OVERSKRIVER filen!
+  if (utfil)  {
+     fprintf(utfil, "%i\n", gAntallKunder);            //  Antallet først,
+     for (int i = 0;  i < gAntallKunder;  i++)         //    så hver kunde:
+         kundeSkrivTilFil(utfil, gKunder[i]);
+     fclose(utfil);
+  } else
+     printf("\n\tKlarte ikke aa aapne 'KUNDER.DTA'!\n");
+}
+
+void kundeSkrivTilFil(FILE* ut, const struct Kunde* kunde)  {
+  fprintf(ut, "%i %c %.2f %s\n", kunde->tlf,           //  SAMME format som lesingen.
+          (kunde->type == Privat) ? 'P' : 'B', kunde->saldo, kunde->navn);
+}
+\end{kode}
+
+\begin{center}
+\begin{tabular}{@{}L{4.6cm}L{11.0cm}@{}}
+\toprule
+\textbf{Funksjon} & \textbf{Merk} \\
+\midrule
+\cc{fopen(navn, "r" | "w" | "a")} & Les / skriv (tømmer filen først) / legg til på slutten. \cc{NULL} hvis det ikke gikk. \\
+\cc{fclose(fil)} & Alltid når du er ferdig -- men bare hvis \cc{fopen} lyktes. \\
+\cc{fprintf(fil, format, ...)} & Som \cc{printf}, men til fil. \\
+\cc{fscanf(fil, format, ...)} & Som \cc{scanf}. Hopper over blanke og \cc{'\bs n'} \emph{før} tall og \cc{\%s}. \\
+\cc{fgets(buf, len, fil)} & Leser til og med \cc{'\bs n'} (eller \cc{len}-1 tegn). \textbf{Beholder} \cc{'\bs n'}. \\
+\cc{getc(fil)} & Leser ett tegn (brukes for å «spise» blank eller \cc{'\bs n'}). \\
+\cc{feof(fil)} & Sann først \textbf{etter} et lesforsøk som traff slutten. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{felle}[{Fil-feller}]
+\begin{itemize}
+  \item \cc{fscanf} et tall og så \cc{fgets}, \textbf{uten \cc{getc}} imellom: \cc{fgets} leser bare den tomme resten av linja (\cc{"\bs n"}).
+  \item Glemt å fjerne \cc{'\bs n'} etter \cc{fgets} -- da skrives navnet med linjeskift og \cc{strcmp} finner ingenting.
+  \item \cc{while (!feof(fil))} \emph{uten} å lese før løkka -- siste post leses dobbelt.
+  \item \cc{fclose} utenfor \cc{if (fil)} -- \cc{fclose(NULL)} kan krasje.
+  \item Test skrivingen med et annet filnavn (Frode brukte f.eks.\ \cc{.DT2}) så du ikke ødelegger datafila.
+  \item Bruk filnavnet \textbf{nøyaktig} slik oppgaven oppgir det.
+\end{itemize}
+\end{felle}

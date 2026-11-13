@@ -1,0 +1,54 @@
+% ============================================================================
+%  Frode-bibelen  --  PROG1001 Grunnleggende programmering (C), NTNU
+%  Oppslagsverk til skoleeksamen (alle trykte og skrevne hjelpemidler).
+%
+%  HOVEDFIL. Kompiler denne med pdfLaTeX. Første gang trengs tre kjøringer før
+%  innholdsfortegnelsen får riktige sidetall -- eller bruk latexmk:
+%      latexmk -pdf frode-bibelen.tex
+%  På Overleaf: last opp hele zip-filen som nytt prosjekt; hovedfilen velges
+%  automatisk.
+%
+%  Struktur:
+%      oppsett.tex          pakker, farger, kodestil, bokser, topptekst
+%      forside.tex          forside og kolofon (hvit/mørk: se oppsett.tex)
+%      kapitler/NN-*.tex    ett kapittel per fil
+%      vedlegg/*.tex        ASCII-tabell og sporingsark
+%
+%  TIPS: Legg Frodes egen LesData.h i samme mappe som denne filen, så blir
+%  den automatisk tatt med i kapittel 2.
+% ============================================================================
+\documentclass[10pt,a4paper]{article}
+\input{oppsett}
+
+% Vil du bare kompilere noen kapitler mens du jobber (raskere), fjern % under
+% og list dem opp. Sidetall og kryssreferanser beholdes fra forrige fulle kjøring.
+% \includeonly{kapitler/08-maler,kapitler/09-filer}
+
+\begin{document}
+
+\input{forside}
+
+\tableofcontents
+\thispagestyle{fancy}
+
+\include{kapitler/01-eksamen}                % 1 Eksamen: format og strategi
+\include{kapitler/02-lesdata}                % 2 LesData.h -- verktøykassen
+\include{kapitler/03-skjelett}               % 3 Programskjelettet i Frodes stil
+\include{kapitler/04-c-grunnlag}             % 4 C-grunnlag: oppslag
+\include{kapitler/05-tekster}                % 5 Tekster
+\include{kapitler/06-funksjoner}             % 6 Funksjoner og parametre
+\include{kapitler/07-struct-pekere}          % 7 Struct, pekere og memory
+\include{kapitler/08-maler}                  % 8 Maler: standardoperasjoner i oppgave 2
+\include{kapitler/09-filer}                  % 9 Filer
+\include{kapitler/10-lenket-liste}           % 10 Lenket liste
+\include{kapitler/11-oppgave1}               % 11 Oppgave 1: Hva blir utskriften?
+\include{kapitler/12-eksamensarkiv}          % 12 Eksamensarkivet H19--S26
+\include{kapitler/13-sjekkliste}             % 13 Sjekkliste
+
+% ========================================================== VEDLEGG ========
+\appendix
+\renewcommand{\thesection}{\Alph{section}}
+\include{vedlegg/a-ascii}                 % A ASCII-tabell
+\include{vedlegg/b-sporingsark}           % B Sporingsark
+
+\end{document}

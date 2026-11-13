@@ -1,0 +1,116 @@
+% !TEX root = frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- oppsett: pakker, farger, kodestil, bokser og topptekst
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\IfFileExists{norsk.ldf}
+  {\usepackage[norsk]{babel}}
+  {\usepackage[english]{babel}
+   \addto\captionsenglish{\renewcommand{\contentsname}{Innhold}%
+     \renewcommand{\figurename}{Figur}\renewcommand{\tablename}{Tabell}}}
+
+\usepackage{charter}                       % brødtekst
+\usepackage[scaled=0.92]{helvet}           % overskrifter
+\renewcommand{\ttdefault}{txtt}            % kode
+\usepackage{microtype}
+\usepackage{amssymb}
+\usepackage{pifont}
+
+\usepackage[a4paper,margin=1.8cm,top=2.1cm,bottom=2.0cm,headsep=0.5cm]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,shapes.multipart}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------- farger ---
+\definecolor{frodeblue}{HTML}{1F4E79}
+\definecolor{kw}{HTML}{1F3F9F}
+\definecolor{cm}{HTML}{4F7A4F}
+\definecolor{st}{HTML}{9A2A2A}
+\definecolor{bg}{HTML}{F5F7FA}
+\definecolor{skinn}{HTML}{1C120E}          % mørkt skinn (forside)
+\definecolor{skinnlys}{HTML}{3B271D}
+\definecolor{gull}{HTML}{D4AF37}
+\definecolor{gullmork}{HTML}{A88A2E}
+
+% Forside: \morkforsidefalse = hvit bakgrunn med gullramme (for utskrift).
+%          \morkforsidetrue  = svart skinn og gull (for skjerm/PDF).
+\newif\ifmorkforside
+\morkforsidefalse
+
+% ------------------------------------------------------------- listings ---
+\lstdefinestyle{frode}{
+  language=C,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries\color{kw},
+  commentstyle=\color{cm},
+  stringstyle=\color{st},
+  morekeywords={bool,true,false,NULL,FILE},
+  showstringspaces=false,
+  columns=fullflexible, keepspaces=true,
+  tabsize=2,
+  breaklines=true,
+  backgroundcolor=\color{bg},
+  frame=leftline, framerule=2pt, rulecolor=\color{frodeblue!45},
+  xleftmargin=8pt, framexleftmargin=5pt,
+  aboveskip=6pt, belowskip=6pt,
+  upquote=true,
+  literate={æ}{{\ae}}1 {ø}{{\o}}1 {å}{{\aa}}1
+           {Æ}{{\AE}}1 {Ø}{{\O}}1 {Å}{{\AA}}1
+           {é}{{\'e}}1 {É}{{\'E}}1 {–}{{--}}1
+           {«}{{\guillemotleft}}1 {»}{{\guillemotright}}1
+}
+\lstset{style=frode,basicstyle=\ttfamily\small}
+\lstnewenvironment{kode}[1][]{\lstset{style=frode,#1}}{}
+\newcommand{\cc}[1]{\texttt{#1}}            % kode i tabeller
+\newcommand{\bs}{\textbackslash}
+
+% ---------------------------------------------------------------- bokser ---
+\tcbset{fbase/.style={enhanced,breakable,boxrule=0.6pt,arc=2pt,
+  left=5pt,right=5pt,top=3pt,bottom=3pt,fonttitle=\sffamily\bfseries\small,
+  before skip=6pt, after skip=6pt}}
+\newtcolorbox{tips}[1][Tips]{fbase,colback=green!4,colframe=green!40!black,title={#1}}
+\newtcolorbox{felle}[1][Felle]{fbase,colback=red!4,colframe=red!55!black,title={#1}}
+\newtcolorbox{regel}[1][Regel]{fbase,colback=frodeblue!5,colframe=frodeblue,title={#1}}
+\newtcolorbox{frode}[1][Frode sier]{fbase,colback=yellow!7,colframe=orange!70!black,title={#1}}
+
+% ----------------------------------------------------------- overskrifter ---
+\titleformat{\section}
+  {\Large\sffamily\bfseries\color{frodeblue}}
+  {\colorbox{frodeblue}{\color{white}\,\thesection\,}}{0.6em}{}
+  [\vspace{-0.5em}{\color{frodeblue}\rule{\linewidth}{0.8pt}}]
+\titleformat{\subsection}
+  {\large\sffamily\bfseries\color{frodeblue!85!black}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\normalsize\sffamily\bfseries}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{0pt}{10pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+\titlespacing*{\subsubsection}{0pt}{8pt}{2pt}
+\newcommand{\kapittel}[1]{\clearpage\section{#1}}
+
+% ------------------------------------------------------------ topptekst ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection\quad #1}{}}
+\fancyhead[L]{\sffamily\small\color{frodeblue}\textbf{Frode-bibelen}\ \textperiodcentered\ PROG1001}
+\fancyhead[R]{\sffamily\small\leftmark}
+\fancyfoot[C]{\sffamily\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlist{nosep,leftmargin=1.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}

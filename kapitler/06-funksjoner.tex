@@ -1,0 +1,75 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 6 Funksjoner og parametre
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ====================================================== 6 FUNKSJONER =======
+\kapittel{Funksjoner og parametre}
+
+\textbf{Prototypen} (deklarasjonen) står før \cc{main}, \textbf{definisjonen} etter. Typene må stemme overens.
+
+\begin{center}
+\begin{tabular}{@{}L{4.8cm}L{4.6cm}L{6.2cm}@{}}
+\toprule
+\textbf{Parameter skrevet som \dots} & \textbf{Funksjonen får \dots} & \textbf{Endring inni funksjonen \dots} \\
+\midrule
+\cc{int n}, \cc{char c}, \cc{float f} & en \textbf{kopi} & påvirker \emph{ikke} kalleren \\
+\cc{const int n} & en kopi som ikke kan endres & -- \\
+\cc{int* n} (kall med \cc{\&x}) & adressen (\emph{referanse}) & endrer \textbf{originalen} via \cc{*n = \dots} \\
+\cc{int a[]} / \cc{char t[]} / \cc{char* t} & adressen til arrayen & endrer \textbf{originalen} (arrayer kopieres aldri) \\
+\cc{const char* t} & adressen, skrivebeskyttet & ikke lov -- brukes for tekster som bare leses \\
+\cc{struct Kunde k} & en \textbf{kopi} av hele structen & påvirker \emph{ikke} originalen \\
+\cc{struct Kunde* k} & adressen til structen & endrer \textbf{originalen} (\cc{k->saldo = 0;}) \\
+\cc{const struct Kunde* k} & adressen, skrivebeskyttet & ikke lov -- for skriv-/sjekk-funksjoner \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Returverdier}
+\begin{kode}
+bool kundeErType(const struct Kunde* kunde, const enum Type type)  {
+  return (kunde->type == type);              //  Returnerer sant/usant.
+}
+
+int finnKunde(const char* navn)  {           //  Returnerer INDEKS eller -1:
+  for (int i = 0;  i < gAntallKunder;  i++)
+      if (!strcmp(gKunder[i]->navn, navn))  return i;
+  return -1;
+}
+
+float kundeHentSaldo(const struct Kunde* kunde)  {  return kunde->saldo;  }
+\end{kode}
+
+\subsection{Flere «returverdier» -- referanseoverføring med pekere}
+En funksjon kan bare \cc{return}-e én verdi. Trenger du flere, send \textbf{adresser} inn (S24 brukte dette):
+\begin{kode}
+void kundeHentTall(const struct Kunde* kunde, int* tlf, float* saldo)  {
+  *tlf   = kunde->tlf;                       //  Skriver til kallerens variable.
+  *saldo = kunde->saldo;
+}
+                                             //  Kall:
+int t;   float s;
+kundeHentTall(gKunder[i], &t, &s);           //  NB:  & foran!
+\end{kode}
+
+\subsection{Bytte om to}
+\begin{kode}
+void bytt(int* a, int* b)  {  int temp = *a;   *a = *b;   *b = temp;  }
+bytt(&x, &y);
+
+struct Kunde* hjelp = gKunder[i];            //  Bytte to PEKERE i arrayen
+gKunder[i] = gKunder[j];   gKunder[j] = hjelp;   //  (structene flyttes ikke).
+
+void byttStruct(struct Kunde* s1, struct Kunde* s2)  {   //  Bytte INNHOLD:
+  struct Kunde s = *s1;   *s1 = *s2;   *s2 = s;
+}
+\end{kode}
+
+\begin{felle}[{Parameter-feller}]
+\begin{itemize}
+  \item Glemt \cc{\&} i kallet: \cc{kundeHentTall(k, t, s)} gir kompileringsfeil / krasj.
+  \item Endrer du en \cc{struct}-\emph{kopi} (\cc{struct Kunde k}) inni funksjonen, ser ikke kalleren endringen. Klassisk i oppgave 1b!
+  \item Arrayparametre har ingen størrelse -- send med antallet: \cc{void skriv(int a[], int n)}.
+\end{itemize}
+\end{felle}

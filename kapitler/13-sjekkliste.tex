@@ -1,0 +1,44 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 13 Sjekkliste
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ===================================================== 13 SJEKKLISTE ========
+\kapittel{Sjekkliste}
+
+\newcommand{\boks}{$\square$\ }
+\subsection*{Før eksamensdagen}
+\boks Bibelen skrevet ut og satt i perm \quad \boks \cc{LesData.h} skrevet ut \quad \boks 2--3 løsningsforslag skrevet ut\\
+\boks Prøvd digital eksamen i Inspera \quad \boks Løst minst tre gamle eksamener på tid \quad \boks Sovet
+
+\subsection*{Oppgave 2 -- for hver funksjon du skriver}
+\begin{multicols}{2}\raggedright
+\boks Lest hele deloppgaven -- og hva som er ferdiglaget\\
+\boks Tegnet datastrukturen\\
+\boks Ny: \cc{if (gAntall < MAX)} + «Fullt»-melding\\
+\boks Andre: \cc{if (gAntall > 0)} før \cc{lesInt(t, 1, gAntall)}\\
+\boks Bruker \cc{nr-1} som indeks\\
+\boks \cc{malloc} for ny struct \emph{og} for hver \cc{char*}\\
+\boks Nullstilt tellere og arrayer i ny struct\\
+\boks \cc{gAntall++} etter ny / \cc{gAntall--} etter sletting\\
+\boks \cc{free} inni structen \emph{før} \cc{free} av structen\\
+\columnbreak
+\boks Global funksjon løkker, struct-funksjon gjør jobben\\
+\boks \cc{->} for pekere, \cc{.} for struct-variable\\
+\boks \cc{strcmp(\dots) == 0} for like tekster\\
+\boks \cc{(float)} før deling når snitt skal ha desimaler\\
+\boks Fil: \cc{getc} etter \cc{fscanf} før \cc{fgets}\\
+\boks Fil: fjernet \cc{'\bs n'} etter \cc{fgets}\\
+\boks Fil: \cc{fclose} inni \cc{if (fil)}\\
+\boks Skriv-til-fil har \emph{samme} format som les-fra-fil\\
+\boks Kommentert det jeg er usikker på
+\end{multicols}
+
+\subsection*{Oppgave 1}
+\boks Teksten skrevet med indekser \quad \boks Variabeltabell oppdatert \quad \boks Riktig antall linjer\\
+\boks Mellomrom og bredder (\cc{\%3i}, \cc{\%-5s}) stemmer \quad \boks Kopi vs.\ peker sjekket for hvert funksjonskall
+
+\subsection*{Siste 15 minutter}
+\boks Alle deloppgaver har \emph{noe} (kode eller pseudokode) \quad \boks Ingen deloppgave står blank\\
+\boks Lagret/levert i Inspera

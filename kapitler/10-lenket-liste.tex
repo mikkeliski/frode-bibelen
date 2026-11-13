@@ -1,0 +1,36 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 10 Lenket liste
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ================================================== 10 LENKET LISTE ========
+\kapittel{Lenket liste (LIFO/FIFO)}
+
+Pensum (forelesning 22, EKS\_32/33), men \textbf{ikke brukt på noen av eksamenene H19--S26} (verken oppgave 1 eller 2). Lav prioritet -- kjenn igjen mønsteret.
+
+
+\begin{kode}
+struct Person {
+  char* navn;
+  struct Person* neste;                  //  Peker til neste i lista (NULL = slutt).
+};
+
+struct Person* liste = NULL;             //  Tom liste.
+struct Person* p;
+
+p = (struct Person*) malloc(sizeof(struct Person));   //  LIFO: hekt inn FORREST.
+p->navn  = lagOgLesText("\tNavn");
+p->neste = liste;
+liste    = p;
+
+p = liste;                               //  Gå gjennom hele lista:
+while (p != NULL)  {  printf("%s\n", p->navn);   p = p->neste;  }
+
+while (liste)  {                         //  Slett hele lista:
+  p = liste;   liste = liste->neste;     //  Hjelpepeker 'står igjen'.
+  free(p->navn);   free(p);
+}
+//  FIFO (kø): ha også en peker 'siste', og hekt nye inn BAKERST:
+//     if (liste == NULL) liste = p;  else siste->neste = p;     p->neste = NULL;  siste = p;
+\end{kode}

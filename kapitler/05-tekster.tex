@@ -1,0 +1,84 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 5 Tekster
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ========================================================= 5 TEKSTER =======
+\kapittel{Tekster (\texorpdfstring{\cc{char}}{char}-arrayer og \texorpdfstring{\cc{char*}}{char*})}
+
+En tekst er en \cc{char}-array som slutter med \cc{'\bs 0'}. \cc{"Ola"} tar \textbf{4} plasser: \cc{'O' 'l' 'a' '\bs 0'}.
+
+\begin{multicols}{2}
+\textbf{Fast buffer} (lokal, kortvarig)
+\begin{kode}
+char buffer[STRLEN];
+lesText("\tNavn", buffer, STRLEN);
+\end{kode}
+\columnbreak
+\textbf{Dynamisk} (i structen, varig)
+\begin{kode}
+char* navn;                  //  Bare en PEKER!
+navn = lagOgLesText("\tNavn");
+...
+free(navn);
+\end{kode}
+\end{multicols}
+
+\subsection{\texorpdfstring{\cc{string.h}}{string.h} og \texorpdfstring{\cc{ctype.h}}{ctype.h}}
+\begin{center}
+\small\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}L{4.6cm}L{11.0cm}@{}}
+\toprule
+\textbf{Funksjon} & \textbf{Gjør / returnerer} \\
+\midrule
+\cc{strlen(s)} & Antall tegn \textbf{uten} \cc{'\bs 0'}. \cc{strlen("Ola")} = 3. \\
+\cc{strcpy(til, fra)} & Kopierer \cc{fra} inn i \cc{til} (overskriver). \cc{til} må ha plass! \\
+\cc{strncpy(til, fra, n)} & Kopierer maks \cc{n} tegn (legger \emph{ikke} alltid på \cc{'\bs 0'}). \\
+\cc{strcat(til, fra)} & Skjøter \cc{fra} på slutten av \cc{til}. \\
+\cc{strcmp(a, b)} & \textbf{0 hvis like}, $<0$ hvis \cc{a} kommer før \cc{b} alfabetisk, $>0$ ellers. \\
+\cc{strncmp(a, b, n)} & Som \cc{strcmp}, men ser bare på de \cc{n} første tegnene. \\
+\cc{strchr(s, c)} & Peker til \textbf{første} forekomst av tegnet \cc{c} i \cc{s}, ellers \cc{NULL}. \\
+\cc{strrchr(s, c)} & Peker til \textbf{siste} forekomst av \cc{c}, ellers \cc{NULL}. \\
+\cc{strstr(s, del)} & Peker til første forekomst av teksten \cc{del} i \cc{s}, ellers \cc{NULL}. \\
+\midrule
+\cc{toupper(c)}, \cc{tolower(c)} & Stor/liten bokstav (andre tegn uendret). \\
+\cc{isupper}, \cc{islower}, \cc{isalpha}, \cc{isdigit}, \cc{isspace} & Sann (ikke 0) hvis tegnet er stor/liten bokstav, bokstav, siffer, blank. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Mønstre du trenger}
+\begin{kode}
+//  1) Er to tekster LIKE?   (ALDRI  a == b  -  det sammenligner adresser!)
+if (strcmp(a, b) == 0)  ...          //  eller:  if (!strcmp(a, b))
+//  2) Inneholder navnet en deltekst?   (søk på del av navn)
+if (strstr(gKunder[i]->navn, sok))  ...      //  != NULL  =>  funn
+//  3) Kopiere fra buffer til NY memory med eksakt riktig størrelse:
+kunde->navn = (char*) malloc((strlen(buffer) + 1) * sizeof(char));   //  +1 for '\0'
+strcpy(kunde->navn, buffer);
+//  4) Gå gjennom tegn for tegn:
+for (int i = 0;  i < strlen(t);  i++)   if (t[i] == 'a')  antall++;
+char* p = t;   while (*p != '\0')  { if (*p == 'a') antall++;  p++; }
+//  5) Bygge opp en ny tekst tegn for tegn - HUSK avsluttende '\0':
+int n = 0;
+for (int i = 0;  t[i];  i++)   if (isalpha(t[i]))  ny[n++] = toupper(t[i]);
+ny[n] = '\0';
+//  6) Alle forekomster av et tegn med strchr:
+char* p = strchr(t, 'e');
+while (p != NULL)  {  antall++;   p = strchr(p+1, 'e');  }
+//  7) Tegn <-> tall:
+int siffer = tegn - '0';       //  '7' -> 7
+char c     = '0' + 5;          //  5   -> '5'
+int nr     = toupper(c) - 'A'; //  'C' -> 2  (plass i alfabetet)
+\end{kode}
+
+\begin{felle}[{Tekst-feller}]
+\begin{itemize}
+  \item \cc{malloc(strlen(t))} er \textbf{én for lite} -- husk \cc{+1} til \cc{'\bs 0'}.
+  \item \cc{strcpy} til en \cc{char*} som ikke peker på noe (ikke \cc{malloc}-et) krasjer.
+  \item \cc{fgets} \textbf{beholder} \cc{'\bs n'}: fjern med \lstinline|t[strlen(t)-1] = '\0';|
+  \item \cc{sizeof(peker)} er pekerens størrelse (8), ikke tekstens lengde. Bruk \cc{strlen}.
+  \item \cc{printf("\%s", t+3)} skriver teksten \textbf{fra indeks 3} og ut -- nyttig i oppgave 1.
+\end{itemize}
+\end{felle}

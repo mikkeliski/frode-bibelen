@@ -1,0 +1,168 @@
+% !TEX root = frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- forside og kolofon
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% =============================================================== FORSIDE ===
+\begin{titlepage}
+\thispagestyle{empty}
+\ifmorkforside
+  \colorlet{omslag}{skinn}\colorlet{omslaglys}{skinnlys}
+  \colorlet{forsidetekst}{gull}\colorlet{ramme}{gull}\colorlet{ramme2}{gullmork}
+\else
+  \colorlet{omslag}{white}\colorlet{omslaglys}{white}
+  \colorlet{forsidetekst}{skinn}\colorlet{ramme}{gullmork}\colorlet{ramme2}{gull}
+\fi
+\newsavebox{\asciiboks}\newsavebox{\asciiskygge}
+\begin{lrbox}{\asciiboks}\begin{minipage}{7.2cm}
+\begin{lstlisting}[language={},backgroundcolor={},frame=none,xleftmargin=0pt,framexleftmargin=0pt,aboveskip=0pt,belowskip=0pt,columns=fixed,keepspaces=true,upquote=true,breaklines=false,literate={},basicstyle=\ttfamily\bfseries\fontsize{11.5}{12.4}\selectfont\color{forsidetekst}]
+           cC
+          cC
+          cC
+           cC
+            cCc
+              cC
+               cC
+                cC
+                cC
+                cC
+c               cC
+Cc     .-'\    cC
+ Cc   /\   \  cC
+  Cc. \ \   \cC  .-'\
+   `Cc.\ \   \.-'    \
+     `Cc\ \        .-/
+        .-'     .-'.-'
+     .-'        \-'
+    /\    .-/\   \
+    \ \.-'.-\ \   \
+     \/.-'   \ \   \
+              \ \   \
+               \ \   \
+                \ \   \
+                 \ \   \
+                  \ \   \
+                   \ \   \
+                    \ \_-/
+                     \/-'
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\asciiskygge}\begin{minipage}{7.2cm}
+\begin{lstlisting}[language={},backgroundcolor={},frame=none,xleftmargin=0pt,framexleftmargin=0pt,aboveskip=0pt,belowskip=0pt,columns=fixed,keepspaces=true,upquote=true,breaklines=false,literate={},basicstyle=\ttfamily\bfseries\fontsize{11.5}{12.4}\selectfont\color{black}]
+           cC
+          cC
+          cC
+           cC
+            cCc
+              cC
+               cC
+                cC
+                cC
+                cC
+c               cC
+Cc     .-'\    cC
+ Cc   /\   \  cC
+  Cc. \ \   \cC  .-'\
+   `Cc.\ \   \.-'    \
+     `Cc\ \        .-/
+        .-'     .-'.-'
+     .-'        \-'
+    /\    .-/\   \
+    \ \.-'.-\ \   \
+     \/.-'   \ \   \
+              \ \   \
+               \ \   \
+                \ \   \
+                 \ \   \
+                  \ \   \
+                   \ \   \
+                    \ \_-/
+                     \/-'
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{tikzpicture}[remember picture,overlay]
+  % Skinnomslag med svak lysning på midten
+  \shade[inner color=omslaglys, outer color=omslag]
+        (current page.south west) rectangle (current page.north east);
+  % Falsen ved ryggen (venstre kant)
+  \ifmorkforside
+    \fill[black,opacity=.35] ([xshift=0.95cm]current page.south west)
+                       rectangle ([xshift=1.25cm]current page.north west);
+    \draw[white,opacity=.07,line width=.6pt] ([xshift=1.3cm]current page.south west)
+                       -- ([xshift=1.3cm]current page.north west);
+  \fi
+  % Doble gullrammer
+  \coordinate (SW) at ([shift={(2.0cm,1.4cm)}]current page.south west);
+  \coordinate (NE) at ([shift={(-1.4cm,-1.4cm)}]current page.north east);
+  \coordinate (sw) at ([shift={(2.3cm,1.7cm)}]current page.south west);
+  \coordinate (ne) at ([shift={(-1.7cm,-1.7cm)}]current page.north east);
+  \draw[ramme,line width=1.8pt] (SW) rectangle (NE);
+  \draw[ramme2,line width=.6pt] (sw) rectangle (ne);
+  % Hjørneornamenter
+  \coordinate (NW) at (SW|-NE);  \coordinate (SE) at (NE|-SW);
+  \foreach \p in {SW,NE,NW,SE}
+    \fill[ramme,rotate around={45:(\p)}] ($(\p)+(-.2,-.2)$) rectangle ++(.4,.4);
+  % Midtpunkt for alt innhold (midt i rammen)
+  \coordinate (M) at ($(SW)!.5!(NE)$);
+  % Fleuron midt på øvre og nedre ramme
+  \node[fill=omslag,inner sep=4pt,text=ramme,font=\Huge] at (M|-NE) {\ding{167}};
+  \node[fill=omslag,inner sep=4pt,text=ramme,font=\Huge,rotate=180] at (M|-SW) {\ding{167}};
+
+  % Øverst
+  \node[text=forsidetekst,font=\fontfamily{ppl}\selectfont\small] at ($(M|-ne)+(0,-1.4)$)
+       {\textls[250]{\MakeUppercase{Prog1001 \,\textperiodcentered\, Grunnleggende programmering}}};
+
+  % ASCII-motivet (preget i gull, med skygge på mørk forside)
+  \ifmorkforside
+    \node[inner sep=0pt,opacity=.55] at ($(M)+(0.63,3.17)$) {\usebox{\asciiskygge}};
+  \fi
+  \node[inner sep=0pt] (A) at ($(M)+(0.6,3.2)$) {\usebox{\asciiboks}};
+
+  % Tittel
+  \node[text=forsidetekst,font=\fontfamily{ppl}\fontsize{44}{48}\selectfont] (T)
+       at ($(M)+(0,-4.5)$) {\textls[120]{FRODE-BIBELEN}};
+  % Ornamentlinje
+  \draw[ramme,line width=.7pt] ($(T.south)+(-5.2,-.45)$) -- ($(T.south)+(-.35,-.45)$);
+  \draw[ramme,line width=.7pt] ($(T.south)+(.35,-.45)$) -- ($(T.south)+(5.2,-.45)$);
+  \fill[ramme,rotate around={45:($(T.south)+(0,-.45)$)}] ($(T.south)+(-.12,-.57)$) rectangle ++(.24,.24);
+  % Undertittel
+  \node[text=forsidetekst,font=\fontfamily{ppl}\selectfont\Large\itshape,align=center]
+       at ($(T.south)+(0,-1.35)$) {Den hellige skrift for grunnleggende programmering i C};
+  % Nederst
+  \node[text=forsidetekst,font=\fontfamily{ppl}\selectfont\normalsize] at ($(M|-sw)+(0,1.9)$)
+       {\textls[250]{\MakeUppercase{Eksamensutgaven}}};
+  \node[text=forsidetekst,font=\fontfamily{ppl}\selectfont\small\itshape] at ($(M|-sw)+(0,1.25)$)
+       {med maler, fallgruver og gjennomregnede eksempler \textperiodcentered\ 2026};
+\end{tikzpicture}
+\end{titlepage}
+
+% ============================================================== KOLOFON ===
+\thispagestyle{empty}
+\vspace*{1.5cm}
+\begin{flushright}
+{\fontfamily{ppl}\selectfont\Large\itshape «I begynnelsen var \texttt{main()}, og \texttt{main()} var hos Frode.»}\\[4pt]
+{\fontfamily{ppl}\selectfont\small -- fritt etter Joh 1,1}
+\end{flushright}
+\vspace{1.5cm}
+
+\begin{regel}[Slik bruker du bibelen]
+\begin{itemize}
+  \item \textbf{Skriv den ut} og legg den i en perm med faneark per kapittel. Topptekstene viser hvilket kapittel du er i.
+  \item \textbf{Kapittel 8--9} (maler og filer) er det du blar mest i under oppgave 2. \textbf{Kapittel 11} og \textbf{vedleggene} (ASCII og sporingsark) er for oppgave 1.
+  \item \textbf{Ta med originalen av \cc{LesData.h}} -- Frode anbefaler selv en utskrift. Legger du filen i samme mappe som \cc{.tex}-filen, kommer den automatisk med i kapittel 2.
+  \item \textbf{Ta med 2--3 løsningsforslag} (\cc{ex\_xxx\_2.c}) fra eksamensarkivet. De viser hele program i nøyaktig den stilen sensor kjenner igjen.
+  \item \textbf{Kodemalene her er egne maler i Frodes stil} med \emph{Kunde} som eksempel. Bytt ut \cc{Kunde}/\cc{kunde} med det oppgaven handler om.
+  \item \textbf{Fyll på selv} i margen etter hver øvingseksamen.
+\end{itemize}
+\end{regel}
+
+\vfill
+{\small Bygget på Frode Haugs emneside
+\href{https://frh.folk.ntnu.no/grprog/}{\cc{frh.folk.ntnu.no/grprog}}:
+opplegg, eksamensråd, stikkordsoppsummering, eksempler (EKS\_01--EKS\_39),
+\cc{LesData.h} og eksamenene H19--S26. Uoffisielt studentlaget hjelpemiddel --
+ikke laget eller godkjent av emneansvarlig.\par}
+\vspace{0.3cm}
+{\small\sffamily Eksamensutgaven, november 2026}
+\clearpage

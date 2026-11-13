@@ -1,0 +1,64 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 2 LesData.h -- verktøykassen
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ====================================================== 2 LESDATA.H ========
+\kapittel{\texorpdfstring{\cc{LesData.h}}{LesData.h} -- verktøykassen}
+
+\cc{LesData.h} (EKS\_34/35, \href{https://frh.folk.ntnu.no/grprog/eksempler/LesData.h}{\cc{grprog/eksempler/LesData.h}})
+inkluderes med \lstinline|#include "LesData.h"| og brukes i \emph{alle} løsningsforslag.
+Den inkluderer selv \cc{ctype.h}, \cc{stdio.h}, \cc{stdlib.h} og \cc{string.h}.
+
+\begin{center}
+\begin{tabular}{@{}L{6.4cm}L{9.2cm}@{}}
+\toprule
+\textbf{Funksjon} & \textbf{Hva den gjør -- og typisk bruk} \\
+\midrule
+\cc{char lesChar(const char* t)} &
+Skriver \cc{t:}, leser \emph{ett} tegn og returnerer det som \textbf{stor bokstav}. \newline
+\cc{kommando = lesChar("\bs nValg");} \\
+\cc{int lesInt(const char* t,} \newline \cc{\ \ \ \ \ \ \ \ const int min, const int max)} &
+Skriver \cc{t (min - max):} og spør \textbf{igjen og igjen} til tallet er i $[\mathit{min}, \mathit{max}]$. \newline
+\cc{nr = lesInt("\bs tKundenr", 1, gAntallKunder);} \\
+\cc{float lesFloat(const char* t,} \newline \cc{\ \ \ \ \ \ \ \ const float min, const float max)} &
+Som \cc{lesInt}, men for desimaltall (viser grensene med 2 desimaler). \newline
+\cc{k->saldo = lesFloat("\bs tSaldo", 0, 100000);} \\
+\cc{char* lagOgLesText(const char* t)} &
+Leser en tekst, \textbf{\cc{malloc}-er nøyaktig nok plass} og returnerer pekeren. Må \cc{free}-es senere! \newline
+\cc{k->navn = lagOgLesText("\bs tNavn");} \\
+\cc{void lesText(const char* t,} \newline \cc{\ \ \ \ \ \ \ \ char* tekst, const int len)} &
+Leser en tekst inn i et \textbf{ferdig buffer} (maks \cc{len}-1 tegn) og fjerner \cc{'\bs n'} på slutten. \newline
+\cc{char buffer[STRLEN];  lesText("\bs tNavn", buffer, STRLEN);} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{felle}[{Feller med LesData.h}]
+\begin{itemize}
+  \item \cc{lesChar} returnerer \textbf{store} bokstaver: sammenlign med \cc{'J'}, \cc{'Q'}, \cc{'R'} -- aldri \cc{'j'}.
+  \item \cc{lesInt(t, 1, gAntallKunder)} når \cc{gAntallKunder == 0} gir en \textbf{evig løkke} (ingen tall er mellom 1 og 0).
+        Sjekk \lstinline|if (gAntallKunder > 0)| først -- eller bruk \cc{0} som «angre» (\cc{lesInt(t, 0, gAntallKunder)}).
+  \item Brukeren skriver nummer \cc{1..antall}, arrayen bruker indeks \cc{0..antall-1}: \lstinline|gKunder[nr-1]|.
+  \item \cc{lagOgLesText} lager \emph{ny} memory hver gang. Lagres teksten ikke (f.eks.\ duplikat), må du \cc{free} den.
+  \item Alle funksjonene leser bort avsluttende \cc{'\bs n'} (med \cc{getchar()}), så de kan blandes fritt.
+        Bruker du \cc{scanf} selv, må du også gjøre \lstinline|getchar();| før neste \cc{fgets}.
+\end{itemize}
+\end{felle}
+
+\begin{tips}[{Ledetekster i Frodes stil}]
+Ledetekster starter ofte med \cc{"\bs t"} for innrykk, og \cc{0} brukes som «ingen/angre»:\par
+\lstinline|int nr = lesInt("\tFjern kunde (0 = angre)", 0, gAntallKunder);|
+\end{tips}
+
+\subsection{Kildekoden (din egen utskrift)}
+\IfFileExists{LesData.h}{%
+  \lstinputlisting[inputencoding=latin1,basicstyle=\ttfamily\scriptsize]{LesData.h}%
+}{%
+\begin{regel}[{Legg inn originalen her}]
+Last ned \href{https://frh.folk.ntnu.no/grprog/eksempler/LesData.h}{\cc{LesData.h}} fra emnesiden,
+legg filen i samme mappe som \cc{frode-bibelen.tex} og kompiler på nytt -- da settes hele kildekoden inn her automatisk.
+(Alternativt: skriv den ut separat og legg den bak dette arket.)
+\end{regel}
+}

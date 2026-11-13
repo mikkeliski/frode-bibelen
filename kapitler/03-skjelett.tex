@@ -1,0 +1,138 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 3 Programskjelettet i Frodes stil
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ===================================================== 3 SKJELETTET ========
+\kapittel{Programskjelettet i Frodes stil}
+
+Nesten alle oppgave 2-program har samme oppbygning. Kjenner du skjelettet,
+vet du hvor alt hører hjemme -- også når du må skrive noe fra scratch.
+
+\begin{kode}
+/**
+ *   Program som holder orden på kunder (navn, telefon, type og saldo).
+ *
+ *   @file     EX_XXX_2.C
+ *   @author   Kandidatnr. 123
+ */
+
+#include <stdio.h>               //  printf, FILE, fopen, fprintf, fscanf
+#include <stdlib.h>              //  malloc, free
+#include <string.h>              //  strlen, strcpy, strcmp, strstr
+#include <stdbool.h>             //  bool, true, false
+#include "LesData.h"             //  lesChar, lesInt, lesFloat, lagOgLesText
+
+#define   MAXKUNDER   100        ///<  Max. antall kunder (array-størrelse).
+const int STRLEN    =  80;       ///<  Max. tekstlengde.
+
+enum Type { Privat, Bedrift };   ///<  Kundetype.
+
+/**
+ *  Kunde (med navn, telefon, type og saldo).
+ */
+struct Kunde {
+  char*     navn;                //  Dynamisk tekst (lages med malloc).
+  int       tlf;                 //  Telefonnummer.
+  enum Type type;                //  Privat eller Bedrift.
+  float     saldo;               //  Utestående beløp.
+};
+
+void skrivMeny();                                              //  Ferdiglaget
+void skrivAlleKunder();                                        //  Oppgave 2A
+void kundeSkrivData(const struct Kunde* kunde);                //  Oppgave 2A
+void nyKunde();                                                //  Oppgave 2B
+void kundeLesData(struct Kunde* kunde);                        //  Oppgave 2B
+void fjernKunde();                                             //  Oppgave 2C
+void kundeFrigi(struct Kunde* kunde);                          //  Oppgave 2C
+void skrivTilFil();                                            //  Oppgave 2F
+void kundeSkrivTilFil(FILE* ut, const struct Kunde* kunde);    //  Oppgave 2F
+void lesFraFil();                                              //  Oppgave 2G
+void kundeLesFraFil(FILE* inn, struct Kunde* kunde);           //  Oppgave 2G
+
+struct Kunde* gKunder[MAXKUNDER];   ///<  PEKERE til alle kunde-structene.
+int gAntallKunder = 0;              ///<  Antall kunder hittil registrert.
+
+/**
+ *  Hovedprogrammet.
+ */
+int main()  {
+  char kommando;
+
+  lesFraFil();                               //  Oppgave 2G
+
+  skrivMeny();
+  kommando = lesChar("\nValg");
+
+  while (kommando != 'Q')  {
+    switch (kommando)  {
+      case 'S':  skrivAlleKunder();  break;  //  Oppgave 2A
+      case 'N':  nyKunde();          break;  //  Oppgave 2B
+      case 'F':  fjernKunde();       break;  //  Oppgave 2C
+      default:   skrivMeny();        break;
+    }
+    kommando = lesChar("\nValg");
+  }
+
+  skrivTilFil();                             //  Oppgave 2F
+  return 0;
+}
+
+/**
+ *  Skriver programmets muligheter/valg for brukeren.
+ */
+void skrivMeny()  {
+  printf("\nFOLGENDE KOMMANDOER ER LOVLIG:\n");
+  printf("\tS = Skriv alle kunder\n");
+  printf("\tN = Ny kunde\n");
+  printf("\tF = Fjern kunde\n");
+  printf("\tQ = Quit/avslutt\n");
+}
+\end{kode}
+
+\subsection{Datastrukturen tegnet}
+\begin{center}
+\begin{tikzpicture}[
+  cell/.style={draw,minimum width=1.25cm,minimum height=0.6cm,font=\ttfamily\footnotesize},
+  st/.style={draw,rounded corners=2pt,fill=frodeblue!6,font=\ttfamily\scriptsize,align=left,inner sep=3pt},
+  arr/.style={-{Stealth[length=2mm]},thick,frodeblue}]
+  \node[font=\ttfamily\footnotesize,anchor=east] at (-0.15,0) {gKunder};
+  \foreach \i in {0,...,5} {
+    \node[cell] (c\i) at (\i*1.25+0.625,0) {};
+    \node[font=\ttfamily\tiny,above] at (c\i.north) {[\i]};
+  }
+  \node[font=\ttfamily\footnotesize,right] at (7.6,0) {\dots\ [MAXKUNDER-1]};
+  \node[st] (k0) at (0.625,-2.1) {navn: \textbullet\\tlf:\ \ 91234567\\type: Privat\\saldo: 250.00};
+  \node[st] (k1) at (3.1,-2.1) {navn: \textbullet\\tlf:\ \ 45678901\\type: Bedrift\\saldo: 0.00};
+  \node[st] (k2) at (5.6,-2.1) {navn: \textbullet\\tlf:\ \ 99887766\\type: Privat\\saldo: 99.50};
+  \draw[arr] (c0.center) -- (k0.north);
+  \draw[arr] (c1.center) -- (k1.north);
+  \draw[arr] (c2.center) -- (k2.north);
+  \node[font=\ttfamily\scriptsize,draw,dashed,inner sep=2pt] (n0) at (0.625,-3.9) {"Ola Hansen\textbackslash0"};
+  \draw[arr] (k0.south) -- (n0.north) node[midway,right,font=\ttfamily\tiny]{navn (malloc)};
+  \node[font=\footnotesize,align=left,anchor=west] at (7.7,-1.6) {\texttt{gAntallKunder = 3}\\[2pt]
+     \textbullet\ Brukt: indeks \texttt{0..gAntallKunder-1}\\
+     \textbullet\ Ledig: neste nye blir \texttt{gKunder[gAntallKunder]}\\
+     \textbullet\ Bruker ser nr.\ \texttt{1..3} $\Rightarrow$ \texttt{gKunder[nr-1]}};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Stil- og navneregler}
+\begin{center}
+\begin{tabular}{@{}L{4.3cm}L{11.3cm}@{}}
+\toprule
+\textbf{Regel} & \textbf{Eksempel / forklaring} \\
+\midrule
+Globale har \cc{g}-prefiks & \cc{gKunder}, \cc{gAntallKunder}, \cc{gBanker}. \\
+To nivåer av funksjoner & \emph{Global} funksjon løper gjennom arrayen (\cc{skrivAlleKunder}); \emph{struct-funksjonen} jobber på \textbf{én} struct via peker (\cc{kundeSkrivData}). Frode: «hver skriver seg selv». \\
+Navn på struct-funksjoner & \cc{<struct><Verb>}: \cc{kundeLesData}, \cc{kundeSkrivData}, \cc{kundeFrigi}, \cc{kundeLesFraFil}. \\
+\cc{const} når den bare leser & \cc{void kundeSkrivData(const struct Kunde* kunde)} -- uten \cc{const} når den endrer. \\
+Array-størrelser med \cc{\#define} & \cc{\#define MAXKUNDER 100} (brukes i array-deklarasjoner). Andre konstanter som \cc{const int}. \\
+Ny-funksjoner sjekker plass & \cc{if (gAntallKunder < MAXKUNDER)} \dots\ \cc{else} «Fullt». \\
+Andre funksjoner sjekker tom & \cc{if (gAntallKunder > 0)} \dots\ \cc{else} «Ingen registrert». \\
+Datoer/klokkeslett som \cc{int} & \cc{MMDD} og \cc{TTMM}: \cc{mnd = dato/100}, \cc{dag = dato\%100} (se \ref{sec:dato}). \\
+Kommentarer & Korte kommentarer til høyre for koden. Doxygen-blokker (\cc{/** @param */}) trengs ikke på eksamen. \\
+\bottomrule
+\end{tabular}
+\end{center}

@@ -1,0 +1,76 @@
+% !TEX root = ../frode-bibelen.tex
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- 1 Eksamen: format og strategi
+%  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
+% ----------------------------------------------------------------------------
+
+% ======================================================== 1 EKSAMEN ========
+\kapittel{Eksamen: format og strategi}
+
+Alle eksamenene fra H19 til S26 har hatt samme form: \textbf{4 timer}, digitalt i Inspera,
+\textbf{alle trykte og skrevne hjelpemidler} (ikke kalkulator), og to uavhengige oppgaver.
+
+\begin{center}
+\begin{tabular}{@{}L{2.3cm}L{1.2cm}L{11.8cm}@{}}
+\toprule
+\textbf{Oppgave} & \textbf{Vekt} & \textbf{Innhold} \\
+\midrule
+1a & 30\,\% samlet & \emph{«Hva blir utskriften?»} -- tekst/\cc{char}-array, pekere og \cc{string.h}-funksjoner (\cc{strchr}, \cc{strstr}, \cc{strncmp} \dots). Antall utskriftslinjer oppgis som hjelp. \\
+1b & & \emph{«Hva blir utskriften?»} -- \cc{struct}, funksjoner med parametre (kopi vs.\ peker), \cc{bool}, \cc{strcpy}/\cc{strcat}. \\
+2 (A--G/H) & 70\,\% & Et større menystyrt program. Et \textbf{skjelett} (\cc{.tpl}) ligger som vedlegg i Inspera: \cc{main}, \cc{skrivMeny}, \cc{struct}-er, prototyper og globale variable er som regel ferdige. Du skriver innmaten i funksjonene. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Forslag til tidsbruk (240 minutter)}
+\begin{tabular}{@{}L{3.2cm}L{12.5cm}@{}}
+0--10 min & Les \emph{hele} oppgavesettet. Åpne skjelettet. Marker hva som er ferdiglaget. \\
+10--75 min & Oppgave 1a og 1b (30\,\% $\approx$ 70 min). Bruk sporingsarket (vedlegg B). \\
+75--225 min & Oppgave 2. Start med deloppgavene du er tryggest på (ofte A, B og G). \\
+225--240 min & Gjennomgang med sjekklisten i kapittel 13. \\
+\end{tabular}
+
+\subsection{Frodes eksamensråd (fritt gjengitt)}
+Kilde: \href{https://frh.folk.ntnu.no/grprog/ex_raad.html}{\cc{grprog/ex\_raad.html}}.
+\begin{frode}[{Hva oppgave 2 egentlig tester}]
+\begin{itemize}
+  \item Det viktigste er å vise at du kan \textbf{opprette, finne fram i og behandle datastrukturer}.
+  \item \textbf{Les hele oppgaveteksten nøye} før du skriver. Tegn datastrukturen og lag notater/pseudokode -- både for helheten og for hver funksjon.
+  \item \textbf{Ikke la noe stå blankt.} Prøv å få «minst en halv F» på alle deloppgaver. Skriv heller ryddig pseudokode enn ingenting.
+  \item \textbf{Ikke gjenta oppgaveteksten} eller læreboka -- henvis heller.
+  \item \textbf{Kommenter det ikke-opplagte.} Er du usikker på syntaksen, skriv i en kommentar hva du \emph{vil} gjøre. Riktig tankegang teller selv om koden har feil.
+  \item \textbf{Robusthet vektlegges ikke} med mindre oppgaven ber om det: anta at input er korrekt og at filene følger formatet.
+  \item Sensor ser \textbf{ikke} etter manglende \cc{;} eller parenteser, men om \textbf{hver funksjon gjør jobben sin}.
+  \item Løsningsforslagene er «overløst». Du kan få god karakter uten like elegant eller helt syntaktisk korrekt kode.
+  \item «Gullkornet»: Ingenting \emph{nytt} kommer på eksamen -- det du kan, skal bare kombineres på en annen måte.
+  \item Ta en pause underveis, og slapp av dagen før.
+\end{itemize}
+\end{frode}
+
+\subsection{Oppgave 2 sin form}
+\begin{itemize}
+  \item \textbf{Datastrukturen} er helt eller delvis gitt og forklart. Nesten alltid: en global \textbf{array med pekere til \cc{struct}} pluss en teller (\cc{gKunder[]}, \cc{gAntallKunder}). Noen ganger to slike (f.eks.\ kunder og banker), eller en fast array av \cc{struct}-er.
+  \item \textbf{Variable, \cc{enum}, \cc{struct} og funksjoner}: alt eller det meste er gitt. Noen ganger må du lage en hjelpefunksjon selv (merket «NY» eller «EKSTRA» i løsningsforslagene).
+  \item \textbf{Løsningsforslag og rettemal} legges i \href{https://frh.folk.ntnu.no/grprog/eksamen/}{eksamensarkivet} ca.\ en time etter eksamen.
+\end{itemize}
+
+\subsection{Typiske deloppgaver i oppgave 2 -- og hvor malen står}
+\begin{center}
+\begin{tabular}{@{}L{5.6cm}L{7.6cm}L{2.0cm}@{}}
+\toprule
+\textbf{Deloppgaven ber deg \dots} & \textbf{Funksjonspar (eksempel)} & \textbf{Mal} \\
+\midrule
+skrive alle (hoveddata) & \cc{skrivAlleKunder} + \cc{kundeSkrivData} & \ref{sec:skrivalle} \\
+legge inn en ny & \cc{nyKunde} + \cc{kundeLesData} & \ref{sec:ny}, \ref{sec:lesdata} \\
+legge inn ny med unikt navn & \cc{finnKunde} (indeks / $-1$) & \ref{sec:unik} \\
+skrive \emph{alt} om én valgt & \cc{skrivEnKunde} + \cc{kundeSkrivAlt} & \ref{sec:velgen} \\
+endre / registrere noe på én & \cc{endreKunde} + \cc{kundeEndre} & \ref{sec:endre} \\
+fjerne / slette én & \cc{fjernKunde} + \cc{kundeFrigi} & \ref{sec:slett} \\
+skrive alle som matcher (type, tekst) & \cc{kundeErType}, \cc{strstr} & \ref{sec:match} \\
+finne flest / størst / dag med mest & hjelpearray + maks-søk & \ref{sec:statistikk} \\
+\cc{enum} inn og ut & \cc{lesType}, \cc{skrivType} & \ref{sec:enum} \\
+skrive alt til fil & \cc{skrivTilFil} + \cc{kundeSkrivTilFil} & \ref{sec:skrivfil} \\
+lese alt fra fil (oftest G) & \cc{lesFraFil} + \cc{kundeLesFraFil} & \ref{sec:lesfil} \\
+\bottomrule
+\end{tabular}
+\end{center}
