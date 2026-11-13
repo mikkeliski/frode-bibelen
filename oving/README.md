@@ -30,7 +30,7 @@ På NixOS: `nix-shell -p go --run "go run ."`
 
 - **Kjører aldri kode.** Hver mal lager både C-programmet og fasiten i Go. Ingen kode blir kompilert eller kjørt på serveren – gcc brukes bare i testene.
 - **Ingen data lagres.** Ingen database, ingen cookies, ingen innlogging. En oppgave er helt bestemt av ID-en i lenken.
-- **Ingen JavaScript.** Streng `Content-Security-Policy` (`default-src 'none'`), og i tillegg `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: no-referrer` og `Cross-Origin-Opener-Policy`/`-Resource-Policy`.
+- **Ingen JavaScript.** Streng `Content-Security-Policy` (`default-src 'none'`), og i tillegg `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: same-origin` og `Cross-Origin-Opener-Policy`/`-Resource-Policy`.
 - **Cross-site-forespørsler avvises** med `http.CrossOriginProtection`.
 - **Alt brukerinnhold escapes** av `html/template`.
 - **Strenge grenser:** skjema maks 16 KiB, svar maks 4 KiB, header maks 16 KiB, og tidsavbrudd på lesing, skriving og inaktive forbindelser.

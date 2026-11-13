@@ -195,7 +195,10 @@ func (a *app) sikkerhetshoder(neste http.Handler) http.Handler {
 			"form-action 'self'; base-uri 'none'; frame-ancestors 'none'")
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("X-Frame-Options", "DENY")
-		h.Set("Referrer-Policy", "no-referrer")
+		// same-origin (ikke no-referrer): med no-referrer sender nettleseren
+		// «Origin: null» på skjemaer over vanlig HTTP, og da avviser
+		// CrossOriginProtection våre egne skjemaer.
+		h.Set("Referrer-Policy", "same-origin")
 		h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()")
 		h.Set("Cross-Origin-Opener-Policy", "same-origin")
 		h.Set("Cross-Origin-Resource-Policy", "same-origin")

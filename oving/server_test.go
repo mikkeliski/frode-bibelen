@@ -156,6 +156,27 @@ func TestCrossSitePostAvvises(t *testing.T) {
 	}
 }
 
+// Over vanlig HTTP (ikke localhost) sender nettlesere ikke Sec-Fetch-Site,
+// bare Origin. Våre egne skjemaer må likevel godtas.
+func TestSammeOpphavUtenSecFetchSite(t *testing.T) {
+	s := testServer(t, konfig{})
+	o, _ := HentOppgave(LagID(0, 1))
+	req, _ := http.NewRequest(http.MethodPost, s.URL+"/oppgave/"+o.ID, strings.NewReader("svar=x"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Origin", s.URL)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("status %d, ville ha 200", res.StatusCode)
+	}
+	if rp := res.Header.Get("Referrer-Policy"); rp != "same-origin" {
+		t.Errorf("Referrer-Policy = %q, ville ha same-origin (no-referrer gir Origin: null)", rp)
+	}
+}
+
 func TestUkjentMetodeOgSti(t *testing.T) {
 	s := testServer(t, konfig{})
 	req, _ := http.NewRequest(http.MethodDelete, s.URL+"/oppgave/"+LagID(0, 1), nil)
