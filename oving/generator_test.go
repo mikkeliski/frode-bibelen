@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -99,6 +100,21 @@ func TestUgyldigeIDer(t *testing.T) {
 	} {
 		if _, err := HentOppgave(id); err == nil {
 			t.Errorf("HentOppgave(%q) skulle feilet", id)
+		}
+	}
+}
+
+// Alle Frodes eksamener med «Hva blir utskriften?» oppgir at det blir 5 linjer.
+func TestAlltidFemLinjer(t *testing.T) {
+	for malNr := range maler {
+		for fro := uint64(1); fro <= 500; fro++ {
+			o, err := HentOppgave(LagID(malNr, fro*0x9e3779b97f4a7c15))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if o.Linjer() != 5 || !strings.HasSuffix(o.Fasit, "\n") {
+				t.Fatalf("%s: %d linjer, ville ha 5\n%q", o.ID, o.Linjer(), o.Fasit)
+			}
 		}
 	}
 }

@@ -25,12 +25,12 @@ func malStructKopi(r *rand.Rand) (string, string, []string) {
 	s1 := velg(r, []string{"!", "+", "#", "x"})
 	s2 := velg(r, []string{"?", "*", "@", "y"})
 
-	// 3 runder med 1-2 operasjoner. Maks én tilordning (a = b eller b = a).
+	// 4 runder med 1-2 operasjoner. Maks én tilordning (a = b eller b = a).
 	ops := []string{"funk1(a);", "funk1(b);", "funk2(&a);", "funk2(&b);", "tilordning"}
 	var linjer []string
 	var ut strings.Builder
 	brukt := false
-	for runde := 0; runde < 3; runde++ {
+	for runde := 0; runde < 4; runde++ {
 		for i, antall := 0, mellom(r, 1, 2); i < antall; i++ {
 			op := velg(r, ops)
 			if op == "tilordning" && brukt {
@@ -56,7 +56,7 @@ func malStructKopi(r *rand.Rand) (string, string, []string) {
 		}
 		linjer = append(linjer, `  printf("%s %i - %s %i\n", a.navn, a.alder, b.navn, b.alder);`)
 		fmt.Fprintf(&ut, "%s %d - %s %d\n", a.navn, a.alder, b.navn, b.alder)
-		if runde < 2 {
+		if runde < 3 {
 			linjer = append(linjer, "")
 		}
 	}
@@ -98,25 +98,25 @@ func malBytt(r *rand.Rand) (string, string, []string) {
 
 	var linjer []string
 	var ut strings.Builder
-	for kall := 1; kall <= 6; kall++ {
-		i := r.IntN(3)
-		j := (i + 1 + r.IntN(2)) % 3 // j != i
-		switch r.IntN(3) {
-		case 0:
-			linjer = append(linjer, fmt.Sprintf("  bytt1(%s, %s);", navn[i], navn[j]))
-		case 1:
-			v[i], v[j] = v[j], v[i]
-			linjer = append(linjer, fmt.Sprintf("  bytt2(&%s, &%s);", navn[i], navn[j]))
-		case 2:
-			v[i] *= 2
-			linjer = append(linjer, fmt.Sprintf("  dobbel(&%s, %s);", navn[i], navn[j]))
-		}
-		if kall%2 == 0 {
-			linjer = append(linjer, `  printf("%i %i %i\n", x, y, z);`)
-			fmt.Fprintf(&ut, "%d %d %d\n", v[0], v[1], v[2])
-			if kall < 6 {
-				linjer = append(linjer, "")
+	for runde := 1; runde <= 5; runde++ {
+		for kall, antall := 0, mellom(r, 1, 2); kall < antall; kall++ {
+			i := r.IntN(3)
+			j := (i + 1 + r.IntN(2)) % 3 // j != i
+			switch r.IntN(3) {
+			case 0:
+				linjer = append(linjer, fmt.Sprintf("  bytt1(%s, %s);", navn[i], navn[j]))
+			case 1:
+				v[i], v[j] = v[j], v[i]
+				linjer = append(linjer, fmt.Sprintf("  bytt2(&%s, &%s);", navn[i], navn[j]))
+			case 2:
+				v[i] *= 2
+				linjer = append(linjer, fmt.Sprintf("  dobbel(&%s, %s);", navn[i], navn[j]))
 			}
+		}
+		linjer = append(linjer, `  printf("%i %i %i\n", x, y, z);`)
+		fmt.Fprintf(&ut, "%d %d %d\n", v[0], v[1], v[2])
+		if runde < 5 {
+			linjer = append(linjer, "")
 		}
 	}
 
@@ -164,6 +164,8 @@ func malVarer(r *rand.Rand) (string, string, []string) {
 	i2, n2 := r.IntN(4), mellom(r, 1, 6)
 	ir1, ir2 := r.IntN(4), r.IntN(4)
 	grense := float32(mellom(r, 10, 30))
+	i3, i4, i5 := r.IntN(4), r.IntN(4), r.IntN(4)
+	grense2 := float32(mellom(r, 10, 30))
 
 	kjop := func(i, n int) {
 		vs[i].antall -= n
@@ -192,6 +194,15 @@ func malVarer(r *rand.Rand) (string, string, []string) {
 		}
 	}
 	ut.WriteString("\n")
+	fmt.Fprintf(&ut, "%s %.2f\n", vs[i3].navn, float64(vs[i3].pris))
+	fmt.Fprintf(&ut, "%d %d\n", b2i(vs[i4].pris > grense2), vs[i5].antall)
+	dyrest := 0
+	for i := 1; i < 4; i++ {
+		if vs[i].pris > vs[dyrest].pris {
+			dyrest = i
+		}
+	}
+	fmt.Fprintf(&ut, "%s\n", vs[dyrest].navn)
 
 	var init []string
 	for _, v := range start {
@@ -217,7 +228,7 @@ void  vareKjop(struct Vare* v, const int n)  {
 }
 
 int main()  {
-  int   i,  dyre = 0;
+  int   i,  dyre = 0,  dyrest = 0;
   float total = 0;
 
   vareKjop(&gVarer[%d], %d);
@@ -234,15 +245,23 @@ int main()  {
   for (i = ANTVARER - 1;  i >= 0;  i--)
     if (gVarer[i].antall > 0)  printf("%%s:%%i ", gVarer[i].navn, gVarer[i].antall);
   printf("\n");
+
+  printf("%%s %%.2f\n", gVarer[%d].navn, gVarer[%d].pris);
+  printf("%%i %%i\n", vareDyr(gVarer[%d], %s), gVarer[%d].antall);
+
+  for (i = 1;  i < ANTVARER;  i++)
+    if (gVarer[i].pris > gVarer[dyrest].pris)  dyrest = i;
+  printf("%%s\n", gVarer[dyrest].navn);
   return 0;
 }
 `, strings.Join(init[:2], ", "), strings.Join(init[2:], ", "),
-		i1, n1, ir1, ir2, i2, n2, prisLiteral(grense))
+		i1, n1, ir1, ir2, i2, n2, prisLiteral(grense), i3, i3, i4, prisLiteral(grense2), i5)
 
 	return kode, ut.String(), []string{
 		"vareRabatt får en KOPI – prisen i arrayen endres ikke. vareRabatt2 får adressen og halverer prisen.",
 		"vareKjop setter antallet til 0 hvis det ville blitt negativt.",
-		"%.2f skriver alltid to desimaler. Siste linje har et mellomrom etter hver vare.",
+		"%.2f skriver alltid to desimaler. Linje 2 har et mellomrom etter hver vare.",
+		"Den siste løkka bytter bare ved STRENGT større pris – ved lik pris beholdes den første.",
 	}
 }
 
@@ -274,6 +293,14 @@ func malTallrekke(r *rand.Rand) (string, string, []string) {
 	}
 	fmt.Fprintf(&ut, "\n%d %d %d\n", maks, sum/d, sum%d)
 	fmt.Fprintf(&ut, "%.1f\n", float64(float32(sum)/float32(k)))
+	neste := func(x int) int {
+		if x%2 == 0 {
+			return x / 2
+		}
+		return mult*x + add
+	}
+	fmt.Fprintf(&ut, "%d %d\n", neste(maks), neste(neste(n)))
+	fmt.Fprintf(&ut, "%.2f %d\n", float64(maks)/4.0, maks/4*4)
 
 	kode := fmt.Sprintf(`#include <stdio.h>
 
@@ -293,6 +320,8 @@ int main()  {
   }
   printf("\n%%i %%i %%i\n", maks, sum / %d, sum %% %d);
   printf("%%.1f\n", (float) sum / %d);
+  printf("%%i %%i\n", neste(maks), neste(neste(n)));
+  printf("%%.2f %%i\n", maks / 4.0, maks / 4 * 4);
   return 0;
 }
 `, mult, add, n0, k, bredde, d, d, k)
@@ -301,5 +330,6 @@ int main()  {
 		"Følg n, sum og maks i en tabell – én rad per runde i løkka.",
 		fmt.Sprintf("%%%di skriver tallet høyrejustert med bredde %d (mellomrom foran).", bredde, bredde),
 		"sum / d og sum % d er heltallsdivisjon og rest. (float) sum / k gir desimaler, og %.1f runder til én desimal.",
+		"maks / 4.0 er desimaldivisjon fordi 4.0 er et desimaltall – maks / 4 * 4 er det ikke.",
 	}
 }

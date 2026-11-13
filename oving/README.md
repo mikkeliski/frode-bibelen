@@ -1,6 +1,6 @@
 # Øvingsside for oppgave 1
 
-En liten nettside for å øve på **«Hva blir utskriften?»** – oppgave 1 på eksamen i PROG1001. Hver gang du trykker «Ny oppgave», lages et nytt C-program i samme stil som på eksamen. Du skriver inn utskriften og får svaret sjekket linje for linje, med fasit og tips etterpå.
+En liten nettside for å øve på **«Hva blir utskriften?»** – oppgave 1 på eksamen i PROG1001. Hver gang du trykker «Ny oppgave», lages et nytt C-program i samme stil som på eksamen – og som på eksamen blir utskriften alltid på 5 linjer. Du skriver inn utskriften og får svaret sjekket linje for linje, med fasit og tips etterpå.
 
 - **1A – tekst og pekere:** indekser og hopp, `*t++`, `strchr`/`strrchr`, `strncmp`/`strstr`/`strcmp`, tegnaritmetikk og `toupper`, og å bygge en ny tekst.
 - **1B – struct og funksjoner:** struct som kopi eller peker, bytte verdier med referanseoverføring, array av structer, og funksjon i løkke med heltallsdivisjon.
