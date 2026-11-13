@@ -36,18 +36,19 @@
   {{end}}
   <div class="tabell">
   <table>
-    <thead><tr><th>Linje</th><th>Ditt svar</th><th>Fasit</th><th></th></tr></thead>
+    <thead><tr><th>Linje</th><th>Ditt svar</th>{{if $.VisFasit}}<th>Fasit</th>{{end}}<th></th></tr></thead>
     <tbody>
     {{range .Linjer}}
       <tr class="{{if .OK}}ok{{else}}galt{{end}}">
-        <td>{{.Nr}}</td><td><code>{{.Ditt}}</code></td><td><code>{{.Fasit}}</code></td>
+        <td>{{.Nr}}</td><td><code>{{.Ditt}}</code></td>{{if $.VisFasit}}<td><code>{{.Fasit}}</code></td>{{end}}
         <td>{{if .OK}}✓{{else}}✗{{end}}</td>
       </tr>
     {{end}}
     </tbody>
   </table>
   </div>
-  <p class="liten">· betyr mellomrom. Blanke på slutten av en linje telles ikke.</p>
+  <p class="liten">· betyr mellomrom. Blanke på slutten av en linje telles ikke.
+  {{- if not .AlleRiktig}} Rett opp linjene med ✗ og prøv igjen – eller trykk «Vis fasit».{{end}}</p>
 </section>
 {{end}}
 

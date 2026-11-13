@@ -27,6 +27,8 @@ const (
 	maksFerdige       = 50_000 // oppgaver per spiller som huskes som løst/fasit vist
 	maksApneForsok    = 1_000  // uløste oppgaver med gale forsøk per spiller
 	tokenBytes        = 32
+	maksAvslorte      = 100_000             // oppgaver der fasiten er vist, som huskes
+	avslortVarighet   = 60 * 24 * time.Hour // så lenge en vist fasit huskes
 	poengtavleVersjon = 1
 )
 
@@ -70,6 +72,7 @@ type poengtavle struct {
 	mu       sync.Mutex
 	spillere map[string]*spiller // token-hash -> spiller
 	navn     map[string]string   // kallenavn i små bokstaver -> token-hash
+	avslort  map[string]int64    // oppgave-ID -> når fasiten ble vist (Unix-tid), for ALLE besøkende
 	fil      string              // "" = bare i minnet
 	maks     int
 	endret   bool
@@ -77,8 +80,9 @@ type poengtavle struct {
 }
 
 type lagretTavle struct {
-	Versjon  int        `json:"versjon"`
-	Spillere []*spiller `json:"spillere"`
+	Versjon  int              `json:"versjon"`
+	Spillere []*spiller       `json:"spillere"`
+	Avslorte map[string]int64 `json:"avslorte_fasiter,omitempty"`
 }
 
 // nyPoengtavle laster fila hvis den finnes. fil = "" gir en tavle bare i minnet.
@@ -86,6 +90,7 @@ func nyPoengtavle(fil string, maks int) (*poengtavle, error) {
 	t := &poengtavle{
 		spillere: map[string]*spiller{},
 		navn:     map[string]string{},
+		avslort:  map[string]int64{},
 		fil:      fil,
 		maks:     maks,
 		na:       time.Now,
@@ -116,6 +121,11 @@ func nyPoengtavle(fil string, maks int) (*poengtavle, error) {
 		}
 		t.spillere[s.TokenHash] = s
 		t.navn[navneNokkel(s.Navn)] = s.TokenHash
+	}
+	for id, tid := range l.Avslorte {
+		if idMonster.MatchString(id) && len(t.avslort) < maksAvslorte {
+			t.avslort[id] = tid
+		}
 	}
 	return t, nil
 }
@@ -206,12 +216,57 @@ func (t *poengtavle) Info(token string) *SpillerInfo {
 	return &SpillerInfo{Navn: s.Navn, Poeng: s.Poeng, Loste: s.Loste, Plass: t.plassLaast(s)}
 }
 
-// Ferdig sier om spilleren allerede har løst oppgaven eller sett fasiten.
+// Ferdig sier om oppgaven ikke lenger kan gi spilleren poeng: den er løst,
+// eller fasiten er vist (av spilleren selv eller noen andre).
 func (t *poengtavle) Ferdig(token, oppgaveID string) bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	s := t.finnLaast(token)
-	return s != nil && s.Ferdige[oppgaveID]
+	if s == nil {
+		return false
+	}
+	_, vist := t.avslort[oppgaveID]
+	return s.Ferdige[oppgaveID] || vist
+}
+
+// Avslor husker at fasiten til en oppgave er vist til noen. Da gir den
+// ikke poeng til noen som ikke allerede har løst den - så det hjelper ikke
+// å hente fasiten i et privat vindu, en annen nettleser eller en annen konto.
+func (t *poengtavle) Avslor(oppgaveID string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if _, finnes := t.avslort[oppgaveID]; finnes {
+		return
+	}
+	if len(t.avslort) >= maksAvslorte {
+		t.ryddAvslorteLaast()
+	}
+	t.avslort[oppgaveID] = t.na().Unix()
+	t.endret = true
+}
+
+// ryddAvslorteLaast fjerner gamle oppføringer, og om nødvendig den eldste tidelen.
+func (t *poengtavle) ryddAvslorteLaast() {
+	grense := t.na().Add(-avslortVarighet).Unix()
+	for id, tid := range t.avslort {
+		if tid < grense {
+			delete(t.avslort, id)
+		}
+	}
+	if len(t.avslort) < maksAvslorte {
+		return
+	}
+	tider := make([]int64, 0, len(t.avslort))
+	for _, tid := range t.avslort {
+		tider = append(tider, tid)
+	}
+	sort.Slice(tider, func(i, j int) bool { return tider[i] < tider[j] })
+	kutt := tider[len(tider)/10]
+	for id, tid := range t.avslort {
+		if tid <= kutt {
+			delete(t.avslort, id)
+		}
+	}
 }
 
 // Svar registrerer et svar og returnerer poengene det ga og en melding.
@@ -226,6 +281,9 @@ func (t *poengtavle) Svar(token, oppgaveID string, riktig bool) (int, string) {
 	t.endret = true
 	if s.Ferdige[oppgaveID] {
 		return 0, "Ingen nye poeng: du har allerede løst denne oppgaven eller sett fasiten."
+	}
+	if _, vist := t.avslort[oppgaveID]; vist {
+		return 0, "Ingen poeng: fasiten til denne oppgaven er allerede vist – her, i et annet vindu eller for noen andre."
 	}
 	gale := s.Forsok[oppgaveID]
 	if !riktig {
@@ -358,7 +416,7 @@ func (t *poengtavle) Lagre() error {
 		t.mu.Unlock()
 		return nil
 	}
-	l := lagretTavle{Versjon: poengtavleVersjon}
+	l := lagretTavle{Versjon: poengtavleVersjon, Avslorte: t.avslort}
 	for _, s := range t.sortertLaast() {
 		l.Spillere = append(l.Spillere, s)
 	}

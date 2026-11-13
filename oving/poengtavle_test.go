@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestKallenavn(t *testing.T) {
@@ -281,5 +282,112 @@ func TestSlettFraFil(t *testing.T) {
 	ny, _ := nyPoengtavle(fil, 100)
 	if ny.Antall() != 1 {
 		t.Errorf("%d spillere igjen, ville ha 1", ny.Antall())
+	}
+}
+
+// ------------------------------------------------- juks med fasiten ---
+
+func TestVistFasitGirIngenPoeng(t *testing.T) {
+	tavle, _ := nyPoengtavle("", 100)
+	a, _ := tavle.BliMed("Anne")
+	b, _ := tavle.BliMed("Berit")
+	id := "2-0000000000000042"
+	tavle.Svar(a, id, true) // Anne løser først: 3 poeng
+	tavle.Avslor(id)        // fasiten vises (for Anne, eller hvem som helst)
+	if p, _ := tavle.Svar(b, id, true); p != 0 {
+		t.Errorf("Berit fikk %d poeng for en oppgave med vist fasit", p)
+	}
+	if !tavle.Ferdig(b, id) {
+		t.Error("oppgaven skulle vært merket som ferdig for Berit")
+	}
+	if tavle.Info(a).Poeng != 3 {
+		t.Error("Anne skulle beholdt poengene sine")
+	}
+}
+
+func harFasit(side string) bool {
+	return strings.Contains(side, `class="ut"`) || strings.Contains(side, "<th>Fasit</th>")
+}
+
+func TestGaltSvarViserIkkeFasit(t *testing.T) {
+	s := testServer(t, konfig{})
+	o, _ := HentOppgave(LagID(3, 7))
+	anonym := http.DefaultClient
+	innlogget := klientMedCookies(t)
+	les(t)(innlogget.PostForm(s.URL+"/poeng/bli-med", url.Values{"navn": {"Prover"}}))
+
+	for navn, k := range map[string]*http.Client{"anonym": anonym, "innlogget": innlogget} {
+		side := les(t)(k.PostForm(s.URL+"/oppgave/"+o.ID, url.Values{"svar": {"tull"}, "handling": {"sjekk"}}))
+		if harFasit(side) {
+			t.Errorf("%s: galt svar viste fasiten", navn)
+		}
+		if !strings.Contains(side, "✗") {
+			t.Errorf("%s: galt svar viste ikke hvilke linjer som er feil", navn)
+		}
+	}
+	// Galt svar ga ingen fasit, så riktig svar nå gir fortsatt 2 poeng.
+	side := les(t)(innlogget.PostForm(s.URL+"/oppgave/"+o.ID, url.Values{"svar": {o.Fasit}, "handling": {"sjekk"}}))
+	if !harFasit(side) || !strings.Contains(side, "2 poeng") {
+		t.Error("riktig svar etter galt skulle gitt 2 poeng og vist fasiten")
+	}
+}
+
+func TestFasitIPrivatVinduGirIngenPoeng(t *testing.T) {
+	s := testServer(t, konfig{})
+	innlogget := klientMedCookies(t)
+	les(t)(innlogget.PostForm(s.URL+"/poeng/bli-med", url.Values{"navn": {"Lur"}}))
+
+	// 1) «Vis fasit» uten cookie, så riktig svar innlogget
+	o, _ := HentOppgave(LagID(4, 1))
+	if side := les(t)(http.PostForm(s.URL+"/oppgave/"+o.ID, url.Values{"handling": {"fasit"}})); !harFasit(side) {
+		t.Fatal("anonym «Vis fasit» viste ikke fasiten")
+	}
+	side := les(t)(innlogget.PostForm(s.URL+"/oppgave/"+o.ID, url.Values{"svar": {o.Fasit}, "handling": {"sjekk"}}))
+	if !strings.Contains(side, "Ingen poeng: fasiten til denne oppgaven er allerede vist") {
+		t.Error("fikk poeng etter at fasiten ble vist i et annet vindu")
+	}
+
+	// 2) Riktig svar uten cookie (f.eks. fra en venn), så riktig svar innlogget
+	o2, _ := HentOppgave(LagID(5, 1))
+	les(t)(http.PostForm(s.URL+"/oppgave/"+o2.ID, url.Values{"svar": {o2.Fasit}, "handling": {"sjekk"}}))
+	side = les(t)(innlogget.PostForm(s.URL+"/oppgave/"+o2.ID, url.Values{"svar": {o2.Fasit}, "handling": {"sjekk"}}))
+	if strings.Contains(side, "riktig på første forsøk") {
+		t.Error("fikk poeng for en oppgave der fasiten var vist for en annen")
+	}
+
+	if side = les(t)(innlogget.Get(s.URL + "/poeng")); !strings.Contains(side, "· 0 poeng ·") {
+		t.Error("spilleren skulle hatt 0 poeng")
+	}
+	// Oppgavesiden sier fra om at oppgaven ikke gir poeng
+	if side = les(t)(innlogget.Get(s.URL + "/oppgave/" + o.ID)); !strings.Contains(side, "denne oppgaven gir ikke flere poeng") {
+		t.Error("oppgavesiden sa ikke fra om at fasiten er vist")
+	}
+}
+
+func TestAvslorteLagresOgRyddes(t *testing.T) {
+	fil := filepath.Join(t.TempDir(), "poeng.json")
+	tavle, _ := nyPoengtavle(fil, 100)
+	tok, _ := tavle.BliMed("Huskes")
+	tavle.Avslor("6-0000000000000001")
+	if err := tavle.Lagre(); err != nil {
+		t.Fatal(err)
+	}
+	ny, _ := nyPoengtavle(fil, 100)
+	if p, _ := ny.Svar(tok, "6-0000000000000001", true); p != 0 {
+		t.Error("viste fasiter ble ikke husket etter omstart")
+	}
+
+	// Når tavla er full, ryddes de eldste - den holder seg under taket.
+	start := time.Unix(1_700_000_000, 0)
+	n := 0
+	tavle.na = func() time.Time { n++; return start.Add(time.Duration(n) * time.Second) }
+	for i := 0; i < maksAvslorte+10; i++ {
+		tavle.Avslor(LagID(7, uint64(i)))
+	}
+	if len(tavle.avslort) > maksAvslorte {
+		t.Errorf("%d avslørte, taket er %d", len(tavle.avslort), maksAvslorte)
+	}
+	if _, nyest := tavle.avslort[LagID(7, uint64(maksAvslorte+9))]; !nyest {
+		t.Error("den nyeste ble ryddet bort")
 	}
 }

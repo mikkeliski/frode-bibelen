@@ -197,18 +197,25 @@ func (a *app) sjekkSvar(w http.ResponseWriter, r *http.Request) {
 		a.feil(w, r, http.StatusBadRequest, "Svaret er for langt eller inneholder ugyldige tegn.")
 		return
 	}
-	d := sideData{Tittel: "Oppgave 1" + o.Del, Oppgave: &o, Svar: svar, VisFasit: true}
+	d := sideData{Tittel: "Oppgave 1" + o.Del, Oppgave: &o, Svar: svar}
 	tok := hentToken(r)
 	if r.PostForm.Get("handling") == "fasit" {
 		d.PoengMelding = a.tavle.FasitVist(tok, o.ID)
+		d.VisFasit = true
 	} else {
 		res := Sjekk(svar, o.Fasit)
 		d.Resultat = &res
 		if strings.TrimSpace(svar) != "" { // et tomt svar er ikke et forsøk
 			var p int
-			p, d.PoengMelding = a.tavle.Svar(tok, o.ID, res.AlleRiktig)
+			p, d.PoengMelding = a.tavle.Svar(tok, o.ID, res.AlleRiktig) // poeng FØR fasiten vises
 			d.FikkPoeng = p > 0
 		}
+		// Et galt svar viser bare hvilke linjer som er riktige, ikke fasiten.
+		// Ellers kunne man svart tull, lest fasiten og svart riktig etterpå.
+		d.VisFasit = res.AlleRiktig
+	}
+	if d.VisFasit {
+		a.tavle.Avslor(o.ID) // gjelder alle, også besøkende uten cookie
 	}
 	d.Spiller = a.tavle.Info(tok)
 	d.AlleredeFerdig = a.tavle.Ferdig(tok, o.ID)

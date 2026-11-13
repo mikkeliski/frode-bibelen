@@ -9,7 +9,9 @@ Hver oppgave har en fast lenke (`/oppgave/4-cf536939c6056f92`), så du kan dele 
 
 ## Poengtavle
 
-Velg et kallenavn på `/poeng` for å samle poeng: **3** for riktig svar på første forsøk, **2** på andre og **1** deretter. Hver oppgave gir poeng bare én gang, og viser du fasiten, gir den ingen poeng. Tomme svar teller ikke som forsøk. Tavla viser de 50 beste, og deg selv hvis du er lenger ned.
+Velg et kallenavn på `/poeng` for å samle poeng: **3** for riktig svar på første forsøk, **2** på andre og **1** deretter. Hver oppgave gir poeng bare én gang. Tomme svar teller ikke som forsøk.
+
+Et galt svar viser bare hvilke linjer som er riktige (✓/✗), ikke fasiten. Fasiten vises først når svaret er riktig eller noen trykker «Vis fasit», og fra da av gir oppgaven ingen poeng til noen som ikke allerede har løst den. Det gjelder også om fasiten ble vist i et privat vindu, en annen nettleser eller for en annen konto. Tavla viser de 50 beste, og deg selv hvis du er lenger ned.
 
 Tavla bygger på ærlighet – koden kan jo alltid kjøres på egen maskin.
 
