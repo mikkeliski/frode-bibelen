@@ -1,0 +1,11 @@
+[Unit]
+Description=Bygg og start øvingssiden på nytt ved nye commits
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/frode-deploy
+StateDirectory=frode-deploy
+TimeoutStartSec=15min

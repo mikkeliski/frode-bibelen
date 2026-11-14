@@ -106,6 +106,35 @@ docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
 
 Poengtavla ligger i volumet `frode-oving-data` og overlever at containeren slettes og bygges på nytt. Sikkerhetskopi: `sudo docker run --rm -v frode-oving-data:/data -v "$PWD":/ut busybox cp /data/poeng.json /ut/`.
 
+## Automatisk oppdatering ved push
+
+`deploy/` inneholder et skript og en systemd-timer som ser etter nye commits på GitHub hvert minutt. Finner den en ny commit, bygger den imaget på nytt og bytter ut containeren:
+
+1. **Bygg:** testene kjøres som en del av `docker build`. Feiler en test, blir det ikke noe nytt image, og den gamle versjonen kjører videre. Den feilede commiten prøves ikke igjen før det kommer en ny.
+2. **Bytt:** den gamle containeren stoppes pent, så poengtavla rekker å lagres, og den nye startes med det samme volumet.
+3. **Sjekk:** svarer ikke den nye versjonen på `/helse` innen 15 sekunder, startes den forrige igjen.
+
+Serveren henter selv fra GitHub, så den trenger ingen åpen port, SSH-nøkkel eller GitHub-runner. Skriptet ligger i en egen klone i `/opt/frode-bibelen` og rører ikke din egen arbeidskopi.
+
+Installer fra `oving/`-mappen på serveren (tilpass først `PORT`, `NAVN` og `EKSTRA_ARGS` øverst i `frode-deploy` hvis du ikke bruker port 6969 og containernavnet `oving`):
+
+```bash
+sudo install -m 755 deploy/frode-deploy /usr/local/bin/frode-deploy
+sudo install -m 644 deploy/frode-deploy.service deploy/frode-deploy.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now frode-deploy.timer
+```
+
+Den installerte kopien er den som kjøres, ikke den i repoet. En push kan derfor bare endre det som kjører inni den låste containeren, aldri det som kjører som root på serveren. Endrer du skriptet i repoet, kjører du `install`-linjene på nytt.
+
+| Kommando | Hva den gjør |
+|---|---|
+| `journalctl -u frode-deploy -f` | Følg med på utrullingene |
+| `systemctl list-timers frode-deploy.timer` | Se når neste sjekk kjører |
+| `sudo systemctl start frode-deploy` | Sjekk etter nye commits med en gang |
+| `sudo rm /var/lib/frode-deploy/feilet && sudo systemctl start frode-deploy` | Prøv en feilet commit på nytt |
+| `sudo systemctl disable --now frode-deploy.timer` | Slå av automatisk oppdatering |
+
 ## Tester
 
 ```bash
@@ -137,5 +166,6 @@ oving/
 ├── maler/           HTML-maler (embeddes i programmet)
 ├── static/          CSS og ikon (embeddes i programmet)
 ├── *_test.go        tester
+├── deploy/          automatisk oppdatering ved push (skript og systemd-timer)
 └── Dockerfile
 ```

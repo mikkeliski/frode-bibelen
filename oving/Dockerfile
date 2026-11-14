@@ -10,6 +10,9 @@ COPY go.mod ./
 COPY *.go ./
 COPY maler ./maler
 COPY static ./static
+# Testene kjøres i byggingen: feiler en test, blir det ikke noe nytt image,
+# og den gamle versjonen kjører videre. (gcc-testen hoppes over med -short.)
+RUN CGO_ENABLED=0 go test -short ./...
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /oving .
 RUN mkdir -p /data
 

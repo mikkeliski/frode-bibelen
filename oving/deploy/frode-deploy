@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# frode-deploy – bygger og starter øvingssiden på nytt når det kommer nye
+# commits på GitHub. Kjøres hvert minutt av frode-deploy.timer.
+#
+# Installeres med `sudo install` til /usr/local/bin. Den installerte kopien
+# kjøres, ikke den i repoet, så en push kan aldri endre det som kjører som root.
+#
+# Flyt: hent siste commit -> bygg imaget (testene kjøres i byggingen) ->
+# stopp den gamle containeren pent -> start den nye -> sjekk /helse.
+# Feiler bygging eller helsesjekk, kjører den gamle versjonen videre.
+set -euo pipefail
+
+# ---- tilpass disse ----------------------------------------------------------
+REPO="https://github.com/mikkeliski/frode-bibelen.git"
+GREN="main"
+PORT="6969"                  # porten på serveren (-p PORT:8080)
+NAVN="oving"                 # containernavnet
+IMAGE="frode-oving"
+VOLUM="frode-oving-data"     # her ligger poengtavla
+EKSTRA_ARGS=()               # f.eks. (-bak-proxy -hsts) bak Caddy
+# -----------------------------------------------------------------------------
+
+KLONE="/opt/frode-bibelen"                           # egen klone, bare for utrulling
+TILSTAND="${STATE_DIRECTORY:-/var/lib/frode-deploy}" # settes av systemd
+mkdir -p "$TILSTAND"
+
+start_container() { # $1 = image
+  docker run -d --name "$NAVN" --restart unless-stopped \
+    --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+    --memory=128m --pids-limit=100 \
+    -v "$VOLUM:/data" \
+    -p "$PORT:8080" \
+    "$1" "${EKSTRA_ARGS[@]}" >/dev/null
+}
+
+stopp_container() {
+  # docker stop sender SIGTERM og venter, så serveren rekker å lagre poengtavla.
+  # (docker rm -f dreper med en gang og kan miste de siste sekundenes poeng.)
+  docker stop -t 15 "$NAVN" >/dev/null 2>&1 || true
+  docker rm "$NAVN" >/dev/null 2>&1 || true
+}
+
+# 1) Hent siste commit
+if [ ! -d "$KLONE/.git" ]; then
+  git clone --quiet --branch "$GREN" "$REPO" "$KLONE"
+fi
+git -C "$KLONE" fetch --quiet origin "$GREN"
+ny="$(git -C "$KLONE" rev-parse "origin/$GREN")"
+kort="${ny:0:12}"
+
+kjorer="$(docker inspect -f '{{index .Config.Labels "frode.commit"}}' "$NAVN" 2>/dev/null || true)"
+if [ "$ny" = "$kjorer" ]; then
+  exit 0                                  # allerede oppdatert
+fi
+if [ "$ny" = "$(cat "$TILSTAND/feilet" 2>/dev/null || true)" ]; then
+  exit 0                                  # denne commiten har feilet før – vent på neste
+fi
+
+git -C "$KLONE" reset --quiet --hard "$ny"
+echo "Ny commit: $(git -C "$KLONE" log -1 --format='%h %s')"
+
+# 2) Bygg. Den gamle containeren kjører videre så lenge.
+if ! docker build --quiet --label "frode.commit=$ny" -t "$IMAGE:ny" "$KLONE/oving" >/dev/null; then
+  echo "$ny" > "$TILSTAND/feilet"
+  echo "Byggingen feilet (se over). Den gamle versjonen kjører videre." >&2
+  exit 1
+fi
+
+# 3) Bytt container
+forrige="$(docker inspect -f '{{.Image}}' "$NAVN" 2>/dev/null || true)"
+stopp_container
+start_container "$IMAGE:ny"
+
+# 4) Helsesjekk
+for _ in $(seq 1 30); do
+  if curl -fsS --max-time 2 "http://127.0.0.1:$PORT/helse" >/dev/null 2>&1; then
+    docker tag "$IMAGE:ny" "$IMAGE:latest"
+    docker rmi "$IMAGE:ny" >/dev/null
+    docker image prune -f >/dev/null      # fjerner gamle, ubrukte versjoner
+    rm -f "$TILSTAND/feilet"
+    echo "Kjører nå $kort."
+    exit 0
+  fi
+  sleep 0.5
+done
+
+# 5) Rull tilbake
+echo "Den nye versjonen svarer ikke på /helse. Ruller tilbake." >&2
+docker logs --tail 20 "$NAVN" >&2 2>&1 || true
+stopp_container
+echo "$ny" > "$TILSTAND/feilet"
+if [ -n "$forrige" ]; then
+  start_container "$forrige"
+  echo "Den forrige versjonen kjører igjen." >&2
+fi
+exit 1

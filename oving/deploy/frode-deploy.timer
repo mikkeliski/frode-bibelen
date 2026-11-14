@@ -1,0 +1,9 @@
+[Unit]
+Description=Se etter nye commits til øvingssiden hvert minutt
+
+[Timer]
+OnCalendar=minutely
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

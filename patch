@@ -1,0 +1,248 @@
+From 02b8ca6b76656b71f910baa838cd0f3efbade225 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mikkel=20S=C3=B8bstad?= <mikkelsobstad@proton.me>
+Date: Sat, 14 Nov 2026 13:47:51 +0100
+Subject: [PATCH] =?UTF-8?q?=C3=98vingsside:=20bygg=20og=20start=20p=C3=A5?=
+ =?UTF-8?q?=20nytt=20automatisk=20ved=20push?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Ny mappe oving/deploy/ med et skript og en systemd-timer som ser etter
+nye commits på GitHub hvert minutt. Ved en ny commit:
+
+1. Imaget bygges på nytt. Testene kjøres nå i docker build, så en push
+   med feilende tester blir aldri rullet ut. En feilet commit prøves
+   ikke igjen før det kommer en ny.
+2. Den gamle containeren stoppes med docker stop (SIGTERM), så
+   poengtavla rekker å lagres, og den nye startes med samme volum.
+3. Svarer ikke den nye versjonen på /helse innen 15 sekunder, startes
+   den forrige igjen.
+
+Serveren henter selv, så den trenger ingen åpen port, SSH-nøkkel eller
+GitHub-runner. Skriptet installeres til /usr/local/bin og kjøres derfra,
+så en push kan aldri endre det som kjører som root.
+
+Dockerfile: go test -short i byggesteget. .dockerignore tar nå med
+testene og utelater deploy/. README: ny seksjon om oppsettet.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011P1yKXmKWf8FDDG6Sq3LtB
+---
+ oving/.dockerignore               |  2 +-
+ oving/Dockerfile                  |  3 +
+ oving/README.md                   | 30 ++++++++++
+ oving/deploy/frode-deploy         | 96 +++++++++++++++++++++++++++++++
+ oving/deploy/frode-deploy.service | 11 ++++
+ oving/deploy/frode-deploy.timer   |  9 +++
+ 6 files changed, 150 insertions(+), 1 deletion(-)
+ create mode 100755 oving/deploy/frode-deploy
+ create mode 100644 oving/deploy/frode-deploy.service
+ create mode 100644 oving/deploy/frode-deploy.timer
+
+diff --git a/oving/.dockerignore b/oving/.dockerignore
+index 91652ce..561b349 100644
+--- a/oving/.dockerignore
++++ b/oving/.dockerignore
+@@ -1,4 +1,4 @@
+-*_test.go
+ oving
+ Dockerfile
+ README.md
++deploy
+diff --git a/oving/Dockerfile b/oving/Dockerfile
+index 3d176d6..c716c96 100644
+--- a/oving/Dockerfile
++++ b/oving/Dockerfile
+@@ -10,6 +10,9 @@ COPY go.mod ./
+ COPY *.go ./
+ COPY maler ./maler
+ COPY static ./static
++# Testene kjøres i byggingen: feiler en test, blir det ikke noe nytt image,
++# og den gamle versjonen kjører videre. (gcc-testen hoppes over med -short.)
++RUN CGO_ENABLED=0 go test -short ./...
+ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /oving .
+ RUN mkdir -p /data
+ 
+diff --git a/oving/README.md b/oving/README.md
+index 6e8dfe8..a711780 100644
+--- a/oving/README.md
++++ b/oving/README.md
+@@ -102,6 +102,35 @@ docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+ 
+ Poengtavla ligger i volumet `frode-oving-data` og overlever at containeren slettes og bygges på nytt. Sikkerhetskopi: `sudo docker run --rm -v frode-oving-data:/data -v "$PWD":/ut busybox cp /data/poeng.json /ut/`.
+ 
++## Automatisk oppdatering ved push
++
++`deploy/` inneholder et skript og en systemd-timer som ser etter nye commits på GitHub hvert minutt. Finner den en ny commit, bygger den imaget på nytt og bytter ut containeren:
++
++1. **Bygg:** testene kjøres som en del av `docker build`. Feiler en test, blir det ikke noe nytt image, og den gamle versjonen kjører videre. Den feilede commiten prøves ikke igjen før det kommer en ny.
++2. **Bytt:** den gamle containeren stoppes pent, så poengtavla rekker å lagres, og den nye startes med det samme volumet.
++3. **Sjekk:** svarer ikke den nye versjonen på `/helse` innen 15 sekunder, startes den forrige igjen.
++
++Serveren henter selv fra GitHub, så den trenger ingen åpen port, SSH-nøkkel eller GitHub-runner. Skriptet ligger i en egen klone i `/opt/frode-bibelen` og rører ikke din egen arbeidskopi.
++
++Installer fra `oving/`-mappen på serveren (tilpass først `PORT`, `NAVN` og `EKSTRA_ARGS` øverst i `frode-deploy` hvis du ikke bruker port 6969 og containernavnet `oving`):
++
++```bash
++sudo install -m 755 deploy/frode-deploy /usr/local/bin/frode-deploy
++sudo install -m 644 deploy/frode-deploy.service deploy/frode-deploy.timer /etc/systemd/system/
++sudo systemctl daemon-reload
++sudo systemctl enable --now frode-deploy.timer
++```
++
++Den installerte kopien er den som kjøres, ikke den i repoet. En push kan derfor bare endre det som kjører inni den låste containeren, aldri det som kjører som root på serveren. Endrer du skriptet i repoet, kjører du `install`-linjene på nytt.
++
++| Kommando | Hva den gjør |
++|---|---|
++| `journalctl -u frode-deploy -f` | Følg med på utrullingene |
++| `systemctl list-timers frode-deploy.timer` | Se når neste sjekk kjører |
++| `sudo systemctl start frode-deploy` | Sjekk etter nye commits med en gang |
++| `sudo rm /var/lib/frode-deploy/feilet && sudo systemctl start frode-deploy` | Prøv en feilet commit på nytt |
++| `sudo systemctl disable --now frode-deploy.timer` | Slå av automatisk oppdatering |
++
+ ## Tester
+ 
+ ```bash
+@@ -133,5 +162,6 @@ oving/
+ ├── maler/           HTML-maler (embeddes i programmet)
+ ├── static/          CSS og ikon (embeddes i programmet)
+ ├── *_test.go        tester
++├── deploy/          automatisk oppdatering ved push (skript og systemd-timer)
+ └── Dockerfile
+ ```
+diff --git a/oving/deploy/frode-deploy b/oving/deploy/frode-deploy
+new file mode 100755
+index 0000000..8e03515
+--- /dev/null
++++ b/oving/deploy/frode-deploy
+@@ -0,0 +1,96 @@
++#!/usr/bin/env bash
++# frode-deploy – bygger og starter øvingssiden på nytt når det kommer nye
++# commits på GitHub. Kjøres hvert minutt av frode-deploy.timer.
++#
++# Installeres med `sudo install` til /usr/local/bin. Den installerte kopien
++# kjøres, ikke den i repoet, så en push kan aldri endre det som kjører som root.
++#
++# Flyt: hent siste commit -> bygg imaget (testene kjøres i byggingen) ->
++# stopp den gamle containeren pent -> start den nye -> sjekk /helse.
++# Feiler bygging eller helsesjekk, kjører den gamle versjonen videre.
++set -euo pipefail
++
++# ---- tilpass disse ----------------------------------------------------------
++REPO="https://github.com/mikkeliski/frode-bibelen.git"
++GREN="main"
++PORT="6969"                  # porten på serveren (-p PORT:8080)
++NAVN="oving"                 # containernavnet
++IMAGE="frode-oving"
++VOLUM="frode-oving-data"     # her ligger poengtavla
++EKSTRA_ARGS=()               # f.eks. (-bak-proxy -hsts) bak Caddy
++# -----------------------------------------------------------------------------
++
++KLONE="/opt/frode-bibelen"                           # egen klone, bare for utrulling
++TILSTAND="${STATE_DIRECTORY:-/var/lib/frode-deploy}" # settes av systemd
++mkdir -p "$TILSTAND"
++
++start_container() { # $1 = image
++  docker run -d --name "$NAVN" --restart unless-stopped \
++    --read-only --cap-drop=ALL --security-opt=no-new-privileges \
++    --memory=128m --pids-limit=100 \
++    -v "$VOLUM:/data" \
++    -p "$PORT:8080" \
++    "$1" "${EKSTRA_ARGS[@]}" >/dev/null
++}
++
++stopp_container() {
++  # docker stop sender SIGTERM og venter, så serveren rekker å lagre poengtavla.
++  # (docker rm -f dreper med en gang og kan miste de siste sekundenes poeng.)
++  docker stop -t 15 "$NAVN" >/dev/null 2>&1 || true
++  docker rm "$NAVN" >/dev/null 2>&1 || true
++}
++
++# 1) Hent siste commit
++if [ ! -d "$KLONE/.git" ]; then
++  git clone --quiet --branch "$GREN" "$REPO" "$KLONE"
++fi
++git -C "$KLONE" fetch --quiet origin "$GREN"
++ny="$(git -C "$KLONE" rev-parse "origin/$GREN")"
++kort="${ny:0:12}"
++
++kjorer="$(docker inspect -f '{{index .Config.Labels "frode.commit"}}' "$NAVN" 2>/dev/null || true)"
++if [ "$ny" = "$kjorer" ]; then
++  exit 0                                  # allerede oppdatert
++fi
++if [ "$ny" = "$(cat "$TILSTAND/feilet" 2>/dev/null || true)" ]; then
++  exit 0                                  # denne commiten har feilet før – vent på neste
++fi
++
++git -C "$KLONE" reset --quiet --hard "$ny"
++echo "Ny commit: $(git -C "$KLONE" log -1 --format='%h %s')"
++
++# 2) Bygg. Den gamle containeren kjører videre så lenge.
++if ! docker build --quiet --label "frode.commit=$ny" -t "$IMAGE:ny" "$KLONE/oving" >/dev/null; then
++  echo "$ny" > "$TILSTAND/feilet"
++  echo "Byggingen feilet (se over). Den gamle versjonen kjører videre." >&2
++  exit 1
++fi
++
++# 3) Bytt container
++forrige="$(docker inspect -f '{{.Image}}' "$NAVN" 2>/dev/null || true)"
++stopp_container
++start_container "$IMAGE:ny"
++
++# 4) Helsesjekk
++for _ in $(seq 1 30); do
++  if curl -fsS --max-time 2 "http://127.0.0.1:$PORT/helse" >/dev/null 2>&1; then
++    docker tag "$IMAGE:ny" "$IMAGE:latest"
++    docker rmi "$IMAGE:ny" >/dev/null
++    docker image prune -f >/dev/null      # fjerner gamle, ubrukte versjoner
++    rm -f "$TILSTAND/feilet"
++    echo "Kjører nå $kort."
++    exit 0
++  fi
++  sleep 0.5
++done
++
++# 5) Rull tilbake
++echo "Den nye versjonen svarer ikke på /helse. Ruller tilbake." >&2
++docker logs --tail 20 "$NAVN" >&2 2>&1 || true
++stopp_container
++echo "$ny" > "$TILSTAND/feilet"
++if [ -n "$forrige" ]; then
++  start_container "$forrige"
++  echo "Den forrige versjonen kjører igjen." >&2
++fi
++exit 1
+diff --git a/oving/deploy/frode-deploy.service b/oving/deploy/frode-deploy.service
+new file mode 100644
+index 0000000..f93f6fd
+--- /dev/null
++++ b/oving/deploy/frode-deploy.service
+@@ -0,0 +1,11 @@
++[Unit]
++Description=Bygg og start øvingssiden på nytt ved nye commits
++Requires=docker.service
++After=docker.service network-online.target
++Wants=network-online.target
++
++[Service]
++Type=oneshot
++ExecStart=/usr/local/bin/frode-deploy
++StateDirectory=frode-deploy
++TimeoutStartSec=15min
+diff --git a/oving/deploy/frode-deploy.timer b/oving/deploy/frode-deploy.timer
+new file mode 100644
+index 0000000..8690208
+--- /dev/null
++++ b/oving/deploy/frode-deploy.timer
+@@ -0,0 +1,9 @@
++[Unit]
++Description=Se etter nye commits til øvingssiden hvert minutt
++
++[Timer]
++OnCalendar=minutely
++AccuracySec=5s
++
++[Install]
++WantedBy=timers.target
+-- 
+2.43.0
