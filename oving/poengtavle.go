@@ -36,6 +36,7 @@ var (
 	ErrUgyldigNavn = errors.New("ugyldig kallenavn")
 	ErrNavnOpptatt = errors.New("kallenavnet er opptatt")
 	ErrTavlaFull   = errors.New("poengtavla er full")
+	ErrUkjentNavn  = errors.New("fant ingen spiller med det kallenavnet")
 )
 
 type spiller struct {
@@ -350,6 +351,31 @@ func (t *poengtavle) Slett(token string) bool {
 	delete(t.spillere, s.TokenHash)
 	t.endret = true
 	return true
+}
+
+// BytNavn gir spilleren med kallenavnet gammelt et nytt kallenavn. Poengene og
+// cookien beholdes, så spilleren merker bare at navnet er endret.
+func (t *poengtavle) BytNavn(gammelt, nytt string) error {
+	nytt = rensNavn(nytt)
+	if err := gyldigNavn(nytt); err != nil {
+		return err
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	h, finnes := t.navn[navneNokkel(rensNavn(gammelt))]
+	if !finnes {
+		return ErrUkjentNavn
+	}
+	// Samme spiller kan endre store/små bokstaver i sitt eget navn.
+	if annen, opptatt := t.navn[navneNokkel(nytt)]; opptatt && annen != h {
+		return ErrNavnOpptatt
+	}
+	s := t.spillere[h]
+	delete(t.navn, navneNokkel(s.Navn))
+	s.Navn = nytt
+	t.navn[navneNokkel(nytt)] = h
+	t.endret = true
+	return nil
 }
 
 // sortertLaast: flest poeng, så flest løste, så den som ble med først.

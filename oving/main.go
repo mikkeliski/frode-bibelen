@@ -419,12 +419,17 @@ func main() {
 	poengfil := flag.String("poengfil", "", "fil der poengtavla lagres (tom = bare i minnet)")
 	maksSpillere := flag.Int("maks-spillere", 5000, "maks antall spillere på poengtavla")
 	slettSpiller := flag.String("slett-spiller", "", "slett spilleren med dette kallenavnet fra -poengfil og avslutt (stopp serveren først)")
+	byttNavn := flag.String("bytt-navn", "", "gi spilleren med dette kallenavnet navnet i -nytt-navn i -poengfil og avslutt (stopp serveren først)")
+	nyttNavn := flag.String("nytt-navn", "", "det nye kallenavnet, brukes sammen med -bytt-navn")
 	flag.Parse()
 
 	logg := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
 	if *slettSpiller != "" {
 		os.Exit(slettFraFil(*poengfil, *slettSpiller, logg))
+	}
+	if *byttNavn != "" || *nyttNavn != "" {
+		os.Exit(byttNavnIFil(*poengfil, *byttNavn, *nyttNavn, logg))
 	}
 
 	a, err := nyApp(konfig{bakProxy: *bakProxy, hsts: *hsts, perMinutt: *perMinutt, burst: *burst,
@@ -533,5 +538,38 @@ func slettFraFil(fil, navn string, logg *slog.Logger) int {
 		return 1
 	}
 	logg.Info("spilleren er slettet", "navn", navn)
+	return 0
+}
+
+// byttNavnIFil gir en spiller et nytt kallenavn direkte i fila.
+func byttNavnIFil(fil, gammelt, nytt string, logg *slog.Logger) int {
+	if fil == "" || gammelt == "" || nytt == "" {
+		logg.Error("bruk: -poengfil FIL -bytt-navn \"Gammelt navn\" -nytt-navn \"Nytt navn\"")
+		return 1
+	}
+	t, err := nyPoengtavle(fil, 1<<30)
+	if err != nil {
+		logg.Error("klarte ikke å lese poengtavla", "feil", err)
+		return 1
+	}
+	switch err := t.BytNavn(gammelt, nytt); {
+	case errors.Is(err, ErrUkjentNavn):
+		logg.Error("fant ingen spiller med det kallenavnet", "navn", gammelt)
+		return 1
+	case errors.Is(err, ErrNavnOpptatt):
+		logg.Error("det nye kallenavnet er opptatt", "navn", nytt)
+		return 1
+	case errors.Is(err, ErrUgyldigNavn):
+		logg.Error("det nye kallenavnet må ha 2-20 tegn: bokstaver, tall, mellomrom og - _ .", "navn", nytt)
+		return 1
+	case err != nil:
+		logg.Error("klarte ikke å bytte navn", "feil", err)
+		return 1
+	}
+	if err := t.Lagre(); err != nil {
+		logg.Error("klarte ikke å lagre", "feil", err)
+		return 1
+	}
+	logg.Info("kallenavnet er byttet", "fra", gammelt, "til", rensNavn(nytt))
 	return 0
 }

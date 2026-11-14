@@ -22,8 +22,11 @@ Tavla bygger på ærlighet – koden kan jo alltid kjøres på egen maskin.
 - **Slett meg:** spillerne kan slette seg selv og poengene sine fra tavla.
 - **Lagring:** en JSON-fil (`-poengfil`) som skrives atomisk hvert 5. sekund ved endringer og når serveren avslutter. Uten `-poengfil` ligger tavla bare i minnet.
 
+Upassende kallenavn kan du bytte eller slette. Stopp serveren først, ellers skriver den over fila. Ved navnebytte beholder spilleren poengene sine og er fortsatt logget inn.
+
 ```bash
 sudo docker stop oving
+sudo docker run --rm -v frode-oving-data:/data frode-oving -bytt-navn "Gammelt navn" -nytt-navn "Nytt navn"
 sudo docker run --rm -v frode-oving-data:/data frode-oving -slett-spiller "Kallenavn"
 sudo docker start oving
 ```
@@ -49,6 +52,7 @@ På NixOS: `nix-shell -p go --run "go run ."`
 | `-poengfil` | tom | Fil der poengtavla lagres. Tom = bare i minnet. Docker-imaget bruker `/data/poeng.json`. |
 | `-maks-spillere` | `5000` | Maks antall spillere på poengtavla |
 | `-slett-spiller` | | Slett spilleren med dette kallenavnet fra `-poengfil` og avslutt |
+| `-bytt-navn`, `-nytt-navn` | | Gi spilleren med kallenavnet i `-bytt-navn` navnet i `-nytt-navn` i `-poengfil`, og avslutt |
 
 ## Sikkerhet
 
