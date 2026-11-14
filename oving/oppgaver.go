@@ -108,7 +108,7 @@ var byer = []string{
 	"Molde", "Alesund", "Narvik", "Halden", "Larvik", "Skien", "Arendal",
 	"Kongsberg", "Drammen", "Elverum", "Steinkjer", "Levanger", "Namsos",
 	"Harstad", "Kirkenes", "Raufoss", "Brumunddal", "Mosjoen", "Notodden",
-	"Fredrikstad", "Honefoss", "Kristiansund", "Orkanger",
+	"Fredrikstad", "Honefoss", "Kristiansund", "Orkanger", "Randaberg",
 }
 
 var fornavn = []string{
