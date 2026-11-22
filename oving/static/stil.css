@@ -32,7 +32,7 @@ h2 { font-size: 1.25rem; margin-top: 2rem; }
 }
 .logo { font-weight: 700; text-decoration: none; color: var(--blaa); font-size: 1.1rem; }
 .logo span { color: var(--gull); font-weight: 500; }
-nav { display: flex; gap: 1rem; }
+nav { display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
 nav a { text-decoration: none; font-weight: 600; }
 
 .valg { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }

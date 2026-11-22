@@ -1,0 +1,20 @@
+# Byggkontekst for oving/Dockerfile (docker build -f oving/Dockerfile .).
+# Dockerfile-en kopierer uansett bare filene den trenger; dette holder
+# konteksten liten og sikrer at Frodes LesData.h aldri sendes med.
+.git
+LesData.h
+*.h
+**/*.pdf
+docs
+oving/oving
+oving/deploy
+oving/*.md
+
+# LaTeX-byggfiler (også i kapitler/ fra \include)
+**/*.aux
+**/*.log
+**/*.out
+**/*.toc
+**/*.fls
+**/*.fdb_latexmk
+**/*.synctex.gz

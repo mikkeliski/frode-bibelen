@@ -5,7 +5,8 @@
 # Installeres med `sudo install` til /usr/local/bin. Den installerte kopien
 # kjøres, ikke den i repoet, så en push kan aldri endre det som kjører som root.
 #
-# Flyt: hent siste commit -> bygg imaget (testene kjøres i byggingen) ->
+# Flyt: hent siste commit -> bygg imaget (bibelen som PDF og testene lages i
+# byggingen, fra rotmappa i klonen) ->
 # stopp den gamle containeren pent -> start den nye -> sjekk /helse.
 # Feiler bygging eller helsesjekk, kjører den gamle versjonen videre.
 set -euo pipefail
@@ -60,7 +61,9 @@ git -C "$KLONE" reset --quiet --hard "$ny"
 echo "Ny commit: $(git -C "$KLONE" log -1 --format='%h %s')"
 
 # 2) Bygg. Den gamle containeren kjører videre så lenge.
-if ! docker build --quiet --label "frode.commit=$ny" -t "$IMAGE:ny" "$KLONE/oving" >/dev/null; then
+# Konteksten er rotmappa, så LaTeX-kildene til bibelen er med (se oving/Dockerfile).
+if ! docker build --quiet --label "frode.commit=$ny" -t "$IMAGE:ny" \
+     -f "$KLONE/oving/Dockerfile" "$KLONE" >/dev/null; then
   echo "$ny" > "$TILSTAND/feilet"
   echo "Byggingen feilet (se over). Den gamle versjonen kjører videre." >&2
   exit 1

@@ -8,4 +8,5 @@ Wants=network-online.target
 Type=oneshot
 ExecStart=/usr/local/bin/frode-deploy
 StateDirectory=frode-deploy
-TimeoutStartSec=15min
+# Første bygging laster ned TeX Live til bibel-PDF-en og kan ta litt tid.
+TimeoutStartSec=30min

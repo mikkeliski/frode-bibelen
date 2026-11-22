@@ -10,16 +10,18 @@ Skriv tegnene i teksten i de tomme rutene over indeksene. Da blir \cc{txt[i]}, \
 Det er tre like ark, så du har ett til hver tekst eller hvert program.
 
 % Ett ark: to tekster med indekser, variabeltabell og utskriftslinjer.
+% Kolonnene er w-kolonner (fast bredde, én linje), ikke p-kolonner: radhøyden i
+% p-kolonner varierer mellom TeX Live-versjoner, og da sprenger arket siden.
 \newcommand{\sporingsarkinnhold}{%
 \textbf{Tekst 1}\par
 {\ttfamily\scriptsize\setlength{\tabcolsep}{0pt}\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{|*{30}{>{\centering\arraybackslash}p{0.56cm}|}}\hline
+\begin{tabular}{|*{30}{wc{0.56cm}|}}\hline
  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 \rowcolor{frodeblue!8}0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 & 25 & 26 & 27 & 28 & 29 \\ \hline
 \end{tabular}}
 \par\smallskip
 {\ttfamily\scriptsize\setlength{\tabcolsep}{0pt}\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{|*{30}{>{\centering\arraybackslash}p{0.56cm}|}}\hline
+\begin{tabular}{|*{30}{wc{0.56cm}|}}\hline
  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 \rowcolor{frodeblue!8}30 & 31 & 32 & 33 & 34 & 35 & 36 & 37 & 38 & 39 & 40 & 41 & 42 & 43 & 44 & 45 & 46 & 47 & 48 & 49 & 50 & 51 & 52 & 53 & 54 & 55 & 56 & 57 & 58 & 59 \\ \hline
 \end{tabular}}
@@ -27,13 +29,13 @@ Det er tre like ark, så du har ett til hver tekst eller hvert program.
 \bigskip
 \textbf{Tekst 2}\par
 {\ttfamily\scriptsize\setlength{\tabcolsep}{0pt}\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{|*{30}{>{\centering\arraybackslash}p{0.56cm}|}}\hline
+\begin{tabular}{|*{30}{wc{0.56cm}|}}\hline
  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 \rowcolor{frodeblue!8}0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 & 25 & 26 & 27 & 28 & 29 \\ \hline
 \end{tabular}}
 \par\smallskip
 {\ttfamily\scriptsize\setlength{\tabcolsep}{0pt}\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{|*{30}{>{\centering\arraybackslash}p{0.56cm}|}}\hline
+\begin{tabular}{|*{30}{wc{0.56cm}|}}\hline
  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 \rowcolor{frodeblue!8}30 & 31 & 32 & 33 & 34 & 35 & 36 & 37 & 38 & 39 & 40 & 41 & 42 & 43 & 44 & 45 & 46 & 47 & 48 & 49 & 50 & 51 & 52 & 53 & 54 & 55 & 56 & 57 & 58 & 59 \\ \hline
 \end{tabular}}
@@ -41,7 +43,7 @@ Det er tre like ark, så du har ett til hver tekst eller hvert program.
 \bigskip
 \textbf{Variabeltabell}\par
 {\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{|p{2.6cm}|p{2.4cm}|p{2.4cm}|p{2.4cm}|p{2.4cm}|p{2.4cm}|}\hline
+\begin{tabular}{|wl{2.6cm}|wl{2.4cm}|wl{2.4cm}|wl{2.4cm}|wl{2.4cm}|wl{2.4cm}|}\hline
 \rowcolor{frodeblue!8}\textbf{Variabel} & \textbf{Verdi} & & & & \\ \hline
 & & & & & \\ \hline
 & & & & & \\ \hline
@@ -56,7 +58,7 @@ Det er tre like ark, så du har ett til hver tekst eller hvert program.
 \bigskip
 \textbf{Utskrift} (marker mellomrom med \textvisiblespace)\par
 {\renewcommand{\arraystretch}{2.0}
-\begin{tabular}{p{0.6cm}p{15.0cm}}
+\begin{tabular}{wl{0.6cm}wl{15.0cm}}
 1 & \hrulefill \\ 2 & \hrulefill \\ 3 & \hrulefill \\ 4 & \hrulefill \\ 5 & \hrulefill \\ 6 & \hrulefill \\
 \end{tabular}}%
 }

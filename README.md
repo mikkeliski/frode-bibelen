@@ -69,7 +69,7 @@ Hvert kapittel starter på ny side, og topptekstene viser hvilket kapittel du er
 
 ## Øv på oppgave 1
 
-Mappen [`oving/`](oving/) inneholder en liten nettside skrevet i Go der du kan øve på tilfeldig genererte «Hva blir utskriften?»-oppgaver i samme stil som oppgave 1A og 1B. Du skriver inn utskriften og får svaret sjekket linje for linje. Alle fasitene er kontrollert mot gcc.
+Mappen [`oving/`](oving/) inneholder en liten nettside skrevet i Go der du kan øve på tilfeldig genererte «Hva blir utskriften?»-oppgaver i samme stil som oppgave 1A og 1B. Du skriver inn utskriften og får svaret sjekket linje for linje. Alle fasitene er kontrollert mot gcc. Siden har også hele bibelen som PDF (uten `LesData.h`), bygget fra samme commit.
 
 ```bash
 cd oving

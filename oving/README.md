@@ -7,6 +7,13 @@ En liten nettside for å øve på **«Hva blir utskriften?»** – oppgave 1 på
 
 Hver oppgave har en fast lenke (`/oppgave/4-cf536939c6056f92`), så du kan dele en bestemt oppgave med andre.
 
+## Frode-bibelen som PDF
+
+Siden har hele bibelen som PDF på `/frode-bibelen.pdf`, med lenke i menyen og på forsiden. PDF-en bygges fra LaTeX-kildene i rotmappa under `docker build` og bakes inn i programmet, så den er alltid fra samme commit som siden.
+
+- **Aldri med `LesData.h`:** Docker-byggingen kopierer bare `.tex`-filene, og `.dockerignore` holder `LesData.h` utenfor. Frodes kode havner derfor ikke på nettet, selv om filen ligger i mappa di.
+- **Uten Docker** (for eksempel `go run .`) er PDF-en ikke med, og lenkene skjules. Se [`bibel/LESMEG.md`](bibel/LESMEG.md) for å teste den lokalt.
+
 ## Poengtavle
 
 Velg et kallenavn på `/poeng` for å samle poeng: **3** for riktig svar på første forsøk, **2** på andre og **1** deretter. Hver oppgave gir poeng bare én gang. Tomme svar teller ikke som forsøk.
@@ -59,6 +66,7 @@ På NixOS: `nix-shell -p go --run "go run ."`
 - **Kjører aldri kode.** Hver mal lager både C-programmet og fasiten i Go. Ingen kode blir kompilert eller kjørt på serveren – gcc brukes bare i testene.
 - **Minimalt med data.** Ingen database og ingen innlogging. En oppgave er helt bestemt av ID-en i lenken. Det eneste som lagres, er poengtavla for dem som velger å bli med (se over).
 - **Ingen JavaScript.** Streng `Content-Security-Policy` (`default-src 'none'`), og i tillegg `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: same-origin` og `Cross-Origin-Opener-Policy`/`-Resource-Policy`.
+- **PDF-en** sendes som `application/pdf` med `nosniff`, men uten sidenes CSP, fordi den stopper nettleserens PDF-visning (særlig i Safari). Den er vår egen, faste fil. `ETag` og `Cache-Control: no-cache` gjør at en ny versjon slår gjennom med en gang.
 - **Cross-site-forespørsler avvises** med `http.CrossOriginProtection`.
 - **Alt brukerinnhold escapes** av `html/template`.
 - **Strenge grenser:** skjema maks 16 KiB, svar maks 4 KiB, header maks 16 KiB, og tidsavbrudd på lesing, skriving og inaktive forbindelser.
@@ -99,10 +107,13 @@ Restart=on-failure
 Eller med Docker (ikke-root, skrivebeskyttet filsystem, ingen capabilities):
 
 ```bash
-docker build -t frode-oving .
+# fra rotmappa i repoet, ikke fra oving/
+docker build -f oving/Dockerfile -t frode-oving .
 docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   -v frode-oving-data:/data -p 127.0.0.1:8080:8080 frode-oving
 ```
+
+Imaget bygges fra rotmappa fordi bibel-PDF-en lages av LaTeX-kildene der. Første bygging laster ned TeX Live og tar et par minutter. Senere bygginger bruker cachen. Selve imaget inneholder bare programmet.
 
 Poengtavla ligger i volumet `frode-oving-data` og overlever at containeren slettes og bygges på nytt. Sikkerhetskopi: `sudo docker run --rm -v frode-oving-data:/data -v "$PWD":/ut busybox cp /data/poeng.json /ut/`.
 
@@ -110,7 +121,7 @@ Poengtavla ligger i volumet `frode-oving-data` og overlever at containeren slett
 
 `deploy/` inneholder et skript og en systemd-timer som ser etter nye commits på GitHub hvert minutt. Finner den en ny commit, bygger den imaget på nytt og bytter ut containeren:
 
-1. **Bygg:** testene kjøres som en del av `docker build`. Feiler en test, blir det ikke noe nytt image, og den gamle versjonen kjører videre. Den feilede commiten prøves ikke igjen før det kommer en ny.
+1. **Bygg:** bibelen bygges som PDF og testene kjøres som en del av `docker build`. Feiler LaTeX eller en test, blir det ikke noe nytt image, og den gamle versjonen kjører videre. Den feilede commiten prøves ikke igjen før det kommer en ny.
 2. **Bytt:** den gamle containeren stoppes pent, så poengtavla rekker å lagres, og den nye startes med det samme volumet.
 3. **Sjekk:** svarer ikke den nye versjonen på `/helse` innen 15 sekunder, startes den forrige igjen.
 
@@ -126,6 +137,8 @@ sudo systemctl enable --now frode-deploy.timer
 ```
 
 Den installerte kopien er den som kjøres, ikke den i repoet. En push kan derfor bare endre det som kjører inni den låste containeren, aldri det som kjører som root på serveren. Endrer du skriptet i repoet, kjører du `install`-linjene på nytt.
+
+**Kommer du fra en versjon uten bibel-PDF-en,** må du installere skriptet og tjenesten på nytt (`install`-linjene og `daemon-reload` over). Det nye skriptet bygger fra rotmappa i klonen. Med det gamle feiler byggingen, og den gamle versjonen kjører videre til du har installert på nytt.
 
 | Kommando | Hva den gjør |
 |---|---|
@@ -165,7 +178,8 @@ oving/
 ├── poengtavle.go    poengtavla og lagringen av den
 ├── maler/           HTML-maler (embeddes i programmet)
 ├── static/          CSS og ikon (embeddes i programmet)
+├── bibel/           Frode-bibelen som PDF (lages i Docker-byggingen, embeddes)
 ├── *_test.go        tester
 ├── deploy/          automatisk oppdatering ved push (skript og systemd-timer)
-└── Dockerfile
+└── Dockerfile       bygges fra rotmappa: docker build -f oving/Dockerfile .
 ```
