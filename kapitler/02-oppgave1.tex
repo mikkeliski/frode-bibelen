@@ -1,15 +1,15 @@
 % !TEX root = ../frode-bibelen.tex
 % ----------------------------------------------------------------------------
-%  Frode-bibelen -- 11 Oppgave 1: Hva blir utskriften?
+%  Frode-bibelen -- 2 Oppgave 1: Hva blir utskriften?
 %  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
 % ----------------------------------------------------------------------------
 
-% ===================================================== 11 OPPGAVE 1 =======
-\kapittel{Oppgave 1: «Hva blir utskriften?»}
+% ======================================================= 2 OPPGAVE 1 ========
+\kapittel{Oppgave 1: «Hva blir utskriften?»}\label{kap:oppgave1}
 
 \begin{regel}[{Metode -- gjør det mekanisk, ikke i hodet}]
 \begin{enumerate}
-  \item \textbf{Skriv teksten(e) ut med indekser under} (bruk sporingsarket, vedlegg B). Da blir \cc{txt[i]}, \cc{txt+13} og \cc{*(t+2)} rene oppslag.
+  \item \textbf{Skriv teksten(e) ut med indekser under} (bruk sporingsarket, kapittel~\ref{kap:sporingsark}). Da blir \cc{txt[i]}, \cc{txt+13} og \cc{*(t+2)} rene oppslag.
   \item \textbf{Lag en variabeltabell} og oppdater den for hver setning -- spesielt pekere (skriv hvilken \emph{indeks} pekeren står på).
   \item \textbf{Én \cc{printf} om gangen}: noter mellomrom, \cc{\%5i}-bredder og \cc{\bs n} nøyaktig.
   \item \textbf{Tell linjene}: oppgaven sier hvor mange linjer det blir. Stemmer ikke antallet, har du en feil.
@@ -41,7 +41,7 @@
 \cc{strcmp(a, b) < 0} & \cc{a} kommer før \cc{b} i ASCII (store bokstaver før små!). \\
 \cc{strcpy(t, s)} / \cc{strcat(t, s)} & Overskriv / skjøt på. \\
 \cc{printf("\%i", a > b)} & Sannhetsverdier skrives som \cc{1} eller \cc{0}. Det samme for \cc{bool}. \\
-\cc{(char)(*c + 2)} & To plasser lenger ut i ASCII-tabellen (\cc{'M'} $\rightarrow$ \cc{'O'}). Se vedlegg A. \\
+\cc{(char)(*c + 2)} & To plasser lenger ut i ASCII-tabellen (\cc{'M'} $\rightarrow$ \cc{'O'}). Se kapittel~\ref{kap:ascii}. \\
 \cc{c - 'a'}, \cc{c - '0'} & Plass i alfabetet / sifferverdi. \\
 \cc{7/2}, \cc{7\%2}, \cc{7/2.0} & \cc{3}, \cc{1}, \cc{3.5}. \ \ \cc{7/2*2} = \cc{6}. \\
 \cc{n *= 2} i løkke & 1, 2, 4, 8, 16 \dots\ -- skriv opp verdien \emph{før} og \emph{etter} hver \cc{printf}. \\

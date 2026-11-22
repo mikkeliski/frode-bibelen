@@ -1,13 +1,13 @@
 % !TEX root = ../frode-bibelen.tex
 % ----------------------------------------------------------------------------
-%  Frode-bibelen -- 8 Maler: standardoperasjoner i oppgave 2
+%  Frode-bibelen -- 12 Maler: standardoperasjoner i oppgave 2
 %  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
 % ----------------------------------------------------------------------------
 
-% ========================================================== 8 MALER ========
+% ========================================================== 12 MALER ========
 \kapittel{Maler: standardoperasjoner i oppgave 2}
 
-Alle malene bruker skjelettet fra kapittel 3 (\cc{gKunder}, \cc{gAntallKunder}, \cc{struct Kunde}).
+Alle malene bruker skjelettet fra kapittel~\ref{kap:skjelett} (\cc{gKunder}, \cc{gAntallKunder}, \cc{struct Kunde}).
 Bytt navn, behold strukturen. Frode unngår \emph{æøå} i \cc{printf}-tekster (konsollen viser dem ofte feil): skriv \cc{aa}, \cc{o}, \cc{ae}.
 
 \subsection{Skriv alle}\label{sec:skrivalle}
@@ -43,11 +43,11 @@ void nyKunde()  {
 \end{kode}
 
 \subsection{Les data inn i én struct}\label{sec:lesdata}
-\begin{kode}
+\begin{kode}[escapeinside={(*@}{@*)}]
 void kundeLesData(struct Kunde* kunde)  {
   kunde->navn  = lagOgLesText("\tNavn");                  //  Tekst (malloc).
   kunde->tlf   = lesInt("\tTelefon", 10000000, 99999999); //  Heltall.
-  kunde->type  = lesType();                               //  enum - se 8.10.
+  kunde->type  = lesType();                               //  enum - se (*@{\ttfamily\footnotesize\color{cm}\ref{sec:enum}}@*).
   kunde->saldo = lesFloat("\tSaldo", 0, 1000000);         //  Desimaltall.
 
   //  Har structen en array og/eller teller? NULLSTILL dem (malloc gir søppel):

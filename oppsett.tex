@@ -98,6 +98,27 @@
 \titlespacing*{\subsection}{0pt}{12pt}{4pt}
 \titlespacing*{\subsubsection}{0pt}{8pt}{2pt}
 \newcommand{\kapittel}[1]{\clearpage\section{#1}}
+% Bredere nummerfelt i innholdsfortegnelsen, så «12.10» ikke kolliderer med tittelen.
+\makeatletter
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.5em}{2.8em}}
+\makeatother
+
+% Skilleside for Del 1 / Del 2 (egen side uten topptekst, med i innhold og bokmerker).
+% Bruk: \del{Del 1 -- Oppgave 1}{Undertittel}
+\newcommand{\del}[2]{%
+  \clearpage\thispagestyle{empty}%
+  \phantomsection\addcontentsline{toc}{part}{#1}%
+  \vspace*{\fill}
+  \begin{center}
+    {\LARGE\sffamily\bfseries\color{frodeblue}#1\par}
+    \vspace{8pt}\rule{0.45\linewidth}{0.6pt}\par\vspace{6pt}
+    {\small #2\par}
+  \end{center}
+  \vspace*{\fill}\vspace*{3cm}
+  \clearpage}
+
+% Avkrysningsboks til sjekklistene (kapittel 1, 7 og 16).
+\newcommand{\boks}{\raisebox{-0.2ex}{\setlength{\fboxsep}{0pt}\fbox{\rule{0pt}{1.5ex}\hspace{1.5ex}}}\ }
 
 % ------------------------------------------------------------ topptekst ---
 \pagestyle{fancy}

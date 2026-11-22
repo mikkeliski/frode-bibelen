@@ -42,25 +42,30 @@ Cc     .-'\    cC
 
 ## Innhold
 
+Bibelen følger eksamen: etter kapittel 1 kommer **Del 1** med alt du trenger til oppgave 1, og **Del 2** med alt til oppgave 2. Hver del har sin egen skilleside og slutter med sin egen sjekkliste.
+
 | Kap. | Tittel | Fil |
 |---|---|---|
 | 1 | Eksamen: format og strategi | `kapitler/01-eksamen.tex` |
-| 2 | `LesData.h` – verktøykassen | `kapitler/02-lesdata.tex` |
-| 3 | Programskjelettet i Frodes stil | `kapitler/03-skjelett.tex` |
-| 4 | C-grunnlag: oppslag | `kapitler/04-c-grunnlag.tex` |
-| 5 | Tekster (`char`-arrayer og `char*`) | `kapitler/05-tekster.tex` |
-| 6 | Funksjoner og parametre | `kapitler/06-funksjoner.tex` |
-| 7 | Struct, pekere og memory | `kapitler/07-struct-pekere.tex` |
-| 8 | Maler: standardoperasjoner i oppgave 2 | `kapitler/08-maler.tex` |
-| 9 | Filer | `kapitler/09-filer.tex` |
-| 10 | Lenket liste (LIFO/FIFO) | `kapitler/10-lenket-liste.tex` |
-| 11 | Oppgave 1: «Hva blir utskriften?» | `kapitler/11-oppgave1.tex` |
-| 12 | Eksamensarkivet H19–S26 | `kapitler/12-eksamensarkiv.tex` |
-| 13 | Sjekkliste | `kapitler/13-sjekkliste.tex` |
-| A | ASCII-tabell (tegn 32–126) | `vedlegg/a-ascii.tex` |
-| B | Sporingsark | `vedlegg/b-sporingsark.tex` |
+| | **Del 1 – Oppgave 1: «Hva blir utskriften?» (30 %)** | |
+| 2 | Oppgave 1: «Hva blir utskriften?» | `kapitler/02-oppgave1.tex` |
+| 3 | C-grunnlag: oppslag | `kapitler/03-c-grunnlag.tex` |
+| 4 | Tekster (`char`-arrayer og `char*`) | `kapitler/04-tekster.tex` |
+| 5 | Funksjoner og parametre | `kapitler/05-funksjoner.tex` |
+| 6 | ASCII-tabell (tegn 32–126) | `kapitler/06-ascii.tex` |
+| 7 | Sjekkliste – oppgave 1 | `kapitler/07-sjekkliste-oppgave1.tex` |
+| 8 | Sporingsark (tre like ark) | `kapitler/08-sporingsark.tex` |
+| | **Del 2 – Oppgave 2: det store menystyrte programmet (70 %)** | |
+| 9 | Programskjelettet i Frodes stil | `kapitler/09-skjelett.tex` |
+| 10 | `LesData.h` – verktøykassen | `kapitler/10-lesdata.tex` |
+| 11 | Struct, pekere og memory | `kapitler/11-struct-pekere.tex` |
+| 12 | Maler: standardoperasjoner i oppgave 2 | `kapitler/12-maler.tex` |
+| 13 | Filer | `kapitler/13-filer.tex` |
+| 14 | Lenket liste (LIFO/FIFO) | `kapitler/14-lenket-liste.tex` |
+| 15 | Eksamensarkivet H19–S26 | `kapitler/15-eksamensarkiv.tex` |
+| 16 | Sjekkliste – oppgave 2 | `kapitler/16-sjekkliste-oppgave2.tex` |
 
-Hvert kapittel starter på ny side, og topptekstene viser hvilket kapittel du er i. Da er det lett å sette inn faneark i permen. Under oppgave 2 er det kapittel 8 og 9 du blar mest i. Under oppgave 1 er det kapittel 11 og vedleggene.
+Hvert kapittel starter på ny side, og topptekstene viser hvilket kapittel du er i. Da er det lett å sette inn faneark i permen. Under oppgave 1 blar du i Del 1, under oppgave 2 i Del 2 – mest i kapittel 12 og 13.
 
 ## Øv på oppgave 1
 
@@ -103,9 +108,9 @@ Norsk orddeling bruker `babel-norsk` hvis pakken er installert. Mangler den, fal
 
 1. Last ned [`LesData.h`](https://frh.folk.ntnu.no/grprog/eksempler/LesData.h) fra emnesiden.
 2. Legg filen i rotmappen, ved siden av `frode-bibelen.tex`.
-3. Kompiler på nytt. Kildekoden settes da automatisk inn i kapittel 2, med riktige æ, ø og å.
+3. Kompiler på nytt. Kildekoden settes da automatisk inn i kapittel 10, med riktige æ, ø og å.
 
-Uten filen viser kapittel 2 i stedet en boks som forklarer hvor du finner den. `LesData.h` står i `.gitignore`, så den blir ikke pushet ved et uhell.
+Uten filen viser kapittel 10 i stedet en boks som forklarer hvor du finner den. `LesData.h` står i `.gitignore`, så den blir ikke pushet ved et uhell.
 
 ## Tilpasning
 
@@ -123,7 +128,7 @@ Forsiden er hvit med gullramme, så den egner seg for utskrift. Vil du heller ha
 Fjern `%` foran `\includeonly` i `frode-bibelen.tex` og list opp kapitlene du jobber med:
 
 ```latex
-\includeonly{kapitler/08-maler,kapitler/09-filer}
+\includeonly{kapitler/12-maler,kapitler/13-filer}
 ```
 
 Sidetall og kryssreferanser beholdes fra forrige fulle kjøring.
@@ -159,7 +164,7 @@ int main()  {
 
 Inneholder tittelen et komma, må den stå i krøllparenteser: `\begin{felle}[{Feller, del 2}]`.
 
-Hver fil i `kapitler/` og `vedlegg/` starter med `% !TEX root = ../frode-bibelen.tex`. Da kompilerer TeXstudio og VS Code (LaTeX Workshop) hovedfilen selv om du har et kapittel åpent.
+Hver fil i `kapitler/` starter med `% !TEX root = ../frode-bibelen.tex`. Da kompilerer TeXstudio og VS Code (LaTeX Workshop) hovedfilen selv om du har et kapittel åpent.
 
 ## Struktur
 
@@ -168,8 +173,7 @@ frode-bibelen/
 ├── frode-bibelen.tex      hovedfil – kompiler denne
 ├── oppsett.tex            pakker, farger, kodestil, bokser, topptekst
 ├── forside.tex            forside og kolofon
-├── kapitler/              ett kapittel per fil (01–13)
-├── vedlegg/               ASCII-tabell og sporingsark
+├── kapitler/              ett kapittel per fil (01–16): Del 1 = 02–08, Del 2 = 09–16
 ├── docs/forside.png       forhåndsvisning til README
 ├── LICENSE                Beerware-lisensen
 ├── oving/                 øvingsside for oppgave 1 (Go)
@@ -183,6 +187,7 @@ Rettelser og forbedringer er velkomne som issues eller pull requests. Hold deg t
 - **Skriv kode i Frodes stil:** `g`-prefiks på globale variable, `struct`-funksjoner som heter `<struct><Verb>` og `const` på parametre som bare leses. Bruk `Kunde` som eksempel i malene.
 - **Test oppgave 1-eksempler:** kompiler og kjør koden, og sjekk at fasiten i teksten stemmer med det programmet faktisk skriver ut.
 - **Ikke kopier Frodes materiale:** ikke lim inn kode fra løsningsforslag, `LesData.h` eller oppgavetekster. Skriv egne maler, og lenk til originalene.
+- **Henvis med `\ref`:** skriv `kapittel~\ref{kap:sporingsark}`, ikke «kapittel 8», så stemmer numrene selv om rekkefølgen endres.
 - **Kompiler før pull request:** hele dokumentet skal bygge uten feil eller `Overfull`-advarsler.
 
 ## Kilder og ansvarsfraskrivelse

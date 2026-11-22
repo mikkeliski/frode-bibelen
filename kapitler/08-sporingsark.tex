@@ -1,12 +1,16 @@
 % !TEX root = ../frode-bibelen.tex
 % ----------------------------------------------------------------------------
-%  Frode-bibelen -- vedlegg B: sporingsark
+%  Frode-bibelen -- 8 Sporingsark
 %  Inkluderes fra frode-bibelen.tex (kompiler alltid hovedfilen).
 % ----------------------------------------------------------------------------
 
-\kapittel{Sporingsark (kopier eller skriv med blyant)}
+% ===================================================== 8 SPORINGSARK ========
+\kapittel{Sporingsark (kopier eller skriv med blyant)}\label{kap:sporingsark}
 Skriv tegnene i teksten i de tomme rutene over indeksene. Da blir \cc{txt[i]}, \cc{txt+i} og \cc{*(t+i)} rene oppslag.
+Det er tre like ark, så du har ett til hver tekst eller hvert program.
 
+% Ett ark: to tekster med indekser, variabeltabell og utskriftslinjer.
+\newcommand{\sporingsarkinnhold}{%
 \textbf{Tekst 1}\par
 {\ttfamily\scriptsize\setlength{\tabcolsep}{0pt}\renewcommand{\arraystretch}{1.9}
 \begin{tabular}{|*{30}{>{\centering\arraybackslash}p{0.56cm}|}}\hline
@@ -54,4 +58,16 @@ Skriv tegnene i teksten i de tomme rutene over indeksene. Da blir \cc{txt[i]}, \
 {\renewcommand{\arraystretch}{2.0}
 \begin{tabular}{p{0.6cm}p{15.0cm}}
 1 & \hrulefill \\ 2 & \hrulefill \\ 3 & \hrulefill \\ 4 & \hrulefill \\ 5 & \hrulefill \\ 6 & \hrulefill \\
-\end{tabular}}
+\end{tabular}}%
+}
+
+\subsection*{Ark 1 av 3}
+\sporingsarkinnhold
+
+\clearpage
+\subsection*{Ark 2 av 3}
+\sporingsarkinnhold
+
+\clearpage
+\subsection*{Ark 3 av 3}
+\sporingsarkinnhold

@@ -147,7 +147,7 @@ int main()  {
 		"*t++ == 'x' sammenligner tegnet der t står, og flytter t etterpå – også når sammenligningen er usann.",
 		"Etter while (*t) står t på '\\0', altså indeks strlen(txt). *(t - k) er da k plasser fra slutten.",
 		"Finnes ikke tegnet, stopper den andre løkka på '\\0', og %s skriver en tom tekst.",
-		"*(txt + c) + 1 er tegnet rett etter i ASCII-tabellen (vedlegg A).",
+		"*(txt + c) + 1 er tegnet rett etter i ASCII-tabellen (kapittel 6 i bibelen).",
 		"*t++ bruker tegnet og flytter t etterpå, *++t flytter først, og ++*t øker selve TEGNET (ikke pekeren).",
 	}
 }
@@ -391,7 +391,7 @@ int main()  {
 
 	return kode, ut.String(), []string{
 		"toupper og tolower endrer bare bokstaver – '-' og mellomrom blir som de er.",
-		"txt[i] + d skrevet med %c er tegnet d plasser lenger ut i ASCII-tabellen (vedlegg A).",
+		"txt[i] + d skrevet med %c er tegnet d plasser lenger ut i ASCII-tabellen (kapittel 6 i bibelen).",
 		"Tegn minus tegn er avstanden mellom dem i ASCII. toupper(c) - 'A' er plassen i alfabetet (A = 0).",
 		"Stor bokstav + 32 er tilsvarende liten bokstav. %i skriver ASCII-koden til et tegn.",
 	}

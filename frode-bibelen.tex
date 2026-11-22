@@ -11,11 +11,12 @@
 %  Struktur:
 %      oppsett.tex          pakker, farger, kodestil, bokser, topptekst
 %      forside.tex          forside og kolofon (hvit/mørk: se oppsett.tex)
-%      kapitler/NN-*.tex    ett kapittel per fil
-%      vedlegg/*.tex        ASCII-tabell og sporingsark
+%      kapitler/NN-*.tex    ett kapittel per fil, i to deler som følger eksamen:
+%                           Del 1 (kapittel 2--8) = oppgave 1,
+%                           Del 2 (kapittel 9--16) = oppgave 2
 %
 %  TIPS: Legg Frodes egen LesData.h i samme mappe som denne filen, så blir
-%  den automatisk tatt med i kapittel 2.
+%  den automatisk tatt med i kapittel 10.
 %
 %  Lisens: Beerware (Revision 42) -- se LICENSE.
 % ============================================================================
@@ -24,7 +25,7 @@
 
 % Vil du bare kompilere noen kapitler mens du jobber (raskere), fjern % under
 % og list dem opp. Sidetall og kryssreferanser beholdes fra forrige fulle kjøring.
-% \includeonly{kapitler/08-maler,kapitler/09-filer}
+% \includeonly{kapitler/12-maler,kapitler/13-filer}
 
 \begin{document}
 
@@ -34,23 +35,26 @@
 \thispagestyle{fancy}
 
 \include{kapitler/01-eksamen}                % 1 Eksamen: format og strategi
-\include{kapitler/02-lesdata}                % 2 LesData.h -- verktøykassen
-\include{kapitler/03-skjelett}               % 3 Programskjelettet i Frodes stil
-\include{kapitler/04-c-grunnlag}             % 4 C-grunnlag: oppslag
-\include{kapitler/05-tekster}                % 5 Tekster
-\include{kapitler/06-funksjoner}             % 6 Funksjoner og parametre
-\include{kapitler/07-struct-pekere}          % 7 Struct, pekere og memory
-\include{kapitler/08-maler}                  % 8 Maler: standardoperasjoner i oppgave 2
-\include{kapitler/09-filer}                  % 9 Filer
-\include{kapitler/10-lenket-liste}           % 10 Lenket liste
-\include{kapitler/11-oppgave1}               % 11 Oppgave 1: Hva blir utskriften?
-\include{kapitler/12-eksamensarkiv}          % 12 Eksamensarkivet H19--S26
-\include{kapitler/13-sjekkliste}             % 13 Sjekkliste
 
-% ========================================================== VEDLEGG ========
-\appendix
-\renewcommand{\thesection}{\Alph{section}}
-\include{vedlegg/a-ascii}                 % A ASCII-tabell
-\include{vedlegg/b-sporingsark}           % B Sporingsark
+% ============================================= DEL 1 -- OPPGAVE 1 (30 %) ===
+\del{Del 1 -- Oppgave 1}{«Hva blir utskriften?» \quad (30\,\%)}
+\include{kapitler/02-oppgave1}               % 2 Oppgave 1: Hva blir utskriften?
+\include{kapitler/03-c-grunnlag}             % 3 C-grunnlag: oppslag
+\include{kapitler/04-tekster}                % 4 Tekster
+\include{kapitler/05-funksjoner}             % 5 Funksjoner og parametre
+\include{kapitler/06-ascii}                  % 6 ASCII-tabell
+\include{kapitler/07-sjekkliste-oppgave1}    % 7 Sjekkliste -- oppgave 1
+\include{kapitler/08-sporingsark}            % 8 Sporingsark (tre ark)
+
+% ============================================= DEL 2 -- OPPGAVE 2 (70 %) ===
+\del{Del 2 -- Oppgave 2}{Det store menystyrte programmet \quad (70\,\%)}
+\include{kapitler/09-skjelett}               % 9 Programskjelettet i Frodes stil
+\include{kapitler/10-lesdata}                % 10 LesData.h -- verktøykassen
+\include{kapitler/11-struct-pekere}          % 11 Struct, pekere og memory
+\include{kapitler/12-maler}                  % 12 Maler: standardoperasjoner i oppgave 2
+\include{kapitler/13-filer}                  % 13 Filer
+\include{kapitler/14-lenket-liste}           % 14 Lenket liste
+\include{kapitler/15-eksamensarkiv}          % 15 Eksamensarkivet H19--S26
+\include{kapitler/16-sjekkliste-oppgave2}    % 16 Sjekkliste -- oppgave 2
 
 \end{document}
