@@ -1,0 +1,26 @@
+% ----------------------------------------------------------------------------
+%  Frode-bibelen -- sporingsarket alene: én side, skriv ut så mange du trenger
+%
+%  Kompiler:  latexmk -pdf sporingsark.tex
+%
+%  Selve arket ligger i sporingsark-ark.tex og er det samme som i kapittel 8
+%  i bibelen. Øvingssiden bygger denne filen og serverer den på /sporingsark.pdf.
+% ----------------------------------------------------------------------------
+\documentclass[10pt,a4paper]{article}
+\input{oppsett}
+\input{sporingsark-ark}
+
+\hypersetup{pdftitle={Sporingsark -- Frode-bibelen}}
+\fancyhead[R]{\sffamily\small Sporingsark til oppgave 1}
+\fancyfoot[C]{}
+
+\begin{document}
+
+\section*{Sporingsark (kopier eller skriv med blyant)}
+Skriv tegnene i teksten i de tomme rutene over indeksene. Da blir \cc{txt[i]}, \cc{txt+i} og \cc{*(t+i)} rene oppslag.
+Ett ark per tekst eller program -- skriv ut så mange du trenger.
+
+\medskip
+\sporingsarkinnhold
+
+\end{document}

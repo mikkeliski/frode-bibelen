@@ -20,17 +20,19 @@ Skriv nøyaktig det programmet skriver ut, og få svaret sjekket linje for linje
 
 <h2>Slik løser du dem</h2>
 <ol>
-  <li>Skriv teksten med indekser under (sporingsarket i kapittel 8 i bibelen).</li>
+  <li>Skriv teksten med indekser under ({{if .SporingsarkKB}}<a href="/sporingsark.pdf">sporingsarket</a>{{else}}sporingsarket{{end}} i kapittel 8 i bibelen).</li>
   <li>Hold en tabell over alle variable og pekere, og oppdater den for hver setning.</li>
   <li>Ta én <code>printf</code> om gangen. Mellomrom og bredder (<code>%3i</code>) teller.</li>
   <li>Utskriften blir alltid på 5 linjer – akkurat som på eksamen. Har du ikke 5, har du en feil.</li>
 </ol>
 
-{{if .BibelKB}}
-<h2>Frode-bibelen som PDF</h2>
-<p>Hele oppslagsverket til eksamen, bygget fra samme versjon som denne siden. Skriv det ut og sett det i en perm.
-<a href="/frode-bibelen.pdf">Last ned Frode-bibelen</a> <span class="liten">(PDF, {{.BibelKB}} kB)</span></p>
-<p class="liten"><code>LesData.h</code> er Frodes egen kode og er ikke med i PDF-en. Last den ned fra
+{{if or .BibelKB .SporingsarkKB}}
+<h2>Til utskrift</h2>
+<ul>
+  {{if .BibelKB}}<li><a href="/frode-bibelen.pdf">Frode-bibelen</a> <span class="liten">(PDF, {{.BibelKB}} kB)</span> – hele oppslagsverket til eksamen. Skriv det ut og sett det i en perm.</li>{{end}}
+  {{if .SporingsarkKB}}<li><a href="/sporingsark.pdf">Sporingsark</a> <span class="liten">(PDF, én side, {{.SporingsarkKB}} kB)</span> – det samme arket som i kapittel 8. Skriv ut så mange du trenger til øvingen.</li>{{end}}
+</ul>
+<p class="liten">Bygget fra samme versjon som denne siden. <code>LesData.h</code> er Frodes egen kode og er ikke med. Last den ned fra
 <a href="https://frh.folk.ntnu.no/grprog/eksempler/LesData.h">emnesiden</a> og skriv den ut i tillegg.</p>
 {{end}}
 

@@ -69,7 +69,7 @@ Hvert kapittel starter på ny side, og topptekstene viser hvilket kapittel du er
 
 ## Øv på oppgave 1
 
-Mappen [`oving/`](oving/) inneholder en liten nettside skrevet i Go der du kan øve på tilfeldig genererte «Hva blir utskriften?»-oppgaver i samme stil som oppgave 1A og 1B. Du skriver inn utskriften og får svaret sjekket linje for linje. Alle fasitene er kontrollert mot gcc. Siden har også hele bibelen som PDF (uten `LesData.h`), bygget fra samme commit.
+Mappen [`oving/`](oving/) inneholder en liten nettside skrevet i Go der du kan øve på tilfeldig genererte «Hva blir utskriften?»-oppgaver i samme stil som oppgave 1A og 1B. Du skriver inn utskriften og får svaret sjekket linje for linje. Alle fasitene er kontrollert mot gcc. Siden har også hele bibelen og sporingsarket som PDF (uten `LesData.h`), bygget fra samme commit.
 
 ```bash
 cd oving
@@ -90,11 +90,17 @@ latexmk -pdf frode-bibelen.tex
 
 Uten `latexmk` kjører du `pdflatex frode-bibelen.tex` tre ganger. Det trengs før innholdsfortegnelsen får riktige sidetall.
 
+Vil du bare ha sporingsarket, én side du kan skrive ut så mange ganger du trenger, bygger du `sporingsark.tex`:
+
+```bash
+latexmk -pdf sporingsark.tex
+```
+
 ### Overleaf
 
 1. Last ned repoet som zip (**Code → Download ZIP**).
 2. Velg **New Project → Upload Project** i Overleaf og last opp zip-filen.
-3. Kontroller at kompilatoren er **pdfLaTeX** og at hovedfilen er `frode-bibelen.tex`.
+3. Kontroller at kompilatoren er **pdfLaTeX** og at hovedfilen er `frode-bibelen.tex`. Velg `sporingsark.tex` som hovedfil hvis du bare vil ha sporingsarket.
 
 ### Pakker
 
@@ -173,6 +179,8 @@ frode-bibelen/
 ├── frode-bibelen.tex      hovedfil – kompiler denne
 ├── oppsett.tex            pakker, farger, kodestil, bokser, topptekst
 ├── forside.tex            forside og kolofon
+├── sporingsark.tex        sporingsarket alene (én side) – kan kompileres for seg
+├── sporingsark-ark.tex    selve arket, brukes av kapittel 8 og sporingsark.tex
 ├── kapitler/              ett kapittel per fil (01–16): Del 1 = 02–08, Del 2 = 09–16
 ├── docs/forside.png       forhåndsvisning til README
 ├── LICENSE                Beerware-lisensen

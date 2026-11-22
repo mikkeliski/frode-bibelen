@@ -30,10 +30,39 @@ import (
 //go:embed maler/*.html static/* bibel
 var filer embed.FS
 
-// bibelFil er Frode-bibelen som PDF. Docker-byggingen lager den fra
-// LaTeX-kildene og legger den i bibel/ før go build (se Dockerfile og
-// bibel/LESMEG.md). Mangler den, virker siden som før, bare uten lenken.
-const bibelFil = "bibel/frode-bibelen.pdf"
+// PDF-ene i bibel/ lages av Docker-byggingen fra LaTeX-kildene i rotmappa
+// (se Dockerfile og bibel/LESMEG.md). Mangler en av dem, virker siden som
+// før, bare uten lenken til den.
+const (
+	bibelFil       = "frode-bibelen.pdf" // hele bibelen
+	sporingsarkFil = "sporingsark.pdf"   // sporingsarket alene, én side
+)
+
+// pdfFil er en PDF som er bakt inn i programmet.
+type pdfFil struct {
+	navn string // filnavnet i bibel/ og i lenken
+	data []byte // nil hvis filen ikke er bygget inn
+	etag string
+}
+
+// sett tar vare på innholdet og lager en ETag av det, så nettleseren får den
+// nye versjonen med en gang etter en utrulling.
+func (p *pdfFil) sett(b []byte) {
+	if len(b) == 0 {
+		p.data, p.etag = nil, ""
+		return
+	}
+	sum := sha256.Sum256(b)
+	p.data, p.etag = b, `"`+hex.EncodeToString(sum[:12])+`"`
+}
+
+// kb er størrelsen i kB til lenketeksten, 0 hvis filen mangler.
+func (p *pdfFil) kb() int {
+	if p.data == nil {
+		return 0
+	}
+	return (len(p.data) + 1023) / 1024
+}
 
 const (
 	maksSkjemaBytes = 16 << 10 // maks størrelse på et innsendt skjema
@@ -66,8 +95,8 @@ type app struct {
 	tavle      *poengtavle
 	logg       *slog.Logger
 
-	bibel     []byte // Frode-bibelen som PDF, nil hvis den ikke er bygget inn
-	bibelEtag string
+	bibel       pdfFil // Frode-bibelen
+	sporingsark pdfFil // sporingsarket alene
 }
 
 func nyApp(konf konfig, logg *slog.Logger) (*app, error) {
@@ -93,21 +122,13 @@ func nyApp(konf konfig, logg *slog.Logger) (*app, error) {
 		}
 		a.sider[side] = t
 	}
-	if b, err := fs.ReadFile(filer, bibelFil); err == nil {
-		a.settBibel(b)
+	a.bibel.navn, a.sporingsark.navn = bibelFil, sporingsarkFil
+	for _, p := range []*pdfFil{&a.bibel, &a.sporingsark} {
+		if b, err := fs.ReadFile(filer, "bibel/"+p.navn); err == nil {
+			p.sett(b)
+		}
 	}
 	return a, nil
-}
-
-// settBibel tar vare på PDF-en og lager en ETag av innholdet, så nettleseren
-// får den nye versjonen med en gang etter en utrulling.
-func (a *app) settBibel(b []byte) {
-	if len(b) == 0 {
-		a.bibel, a.bibelEtag = nil, ""
-		return
-	}
-	sum := sha256.Sum256(b)
-	a.bibel, a.bibelEtag = b, `"`+hex.EncodeToString(sum[:12])+`"`
 }
 
 // handler bygger hele kjeden: logging -> sikkerhetshoder -> ratebegrensning ->
@@ -121,7 +142,8 @@ func (a *app) handler() http.Handler {
 	mux.HandleFunc("GET /poeng", a.poengside)
 	mux.HandleFunc("POST /poeng/bli-med", a.bliMed)
 	mux.HandleFunc("POST /poeng/slett", a.slettMeg)
-	mux.HandleFunc("GET /frode-bibelen.pdf", a.bibelPDF)
+	mux.HandleFunc("GET /"+bibelFil, a.sendPDF(&a.bibel, "PDF-en av bibelen er ikke med i denne versjonen av siden."))
+	mux.HandleFunc("GET /"+sporingsarkFil, a.sendPDF(&a.sporingsark, "Sporingsarket er ikke med i denne versjonen av siden."))
 	mux.HandleFunc("GET /helse", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		_, _ = w.Write([]byte("ok\n"))
@@ -158,7 +180,9 @@ type sideData struct {
 	MalerA   []string
 	MalerB   []string
 
-	BibelKB int // størrelsen på PDF-en i kB, 0 = ingen PDF (skjul lenkene)
+	// Størrelsen på PDF-ene i kB, 0 = ikke bygget inn (skjul lenkene).
+	BibelKB       int
+	SporingsarkKB int
 
 	Spiller        *SpillerInfo // nil = ikke med på poengtavla
 	AlleredeFerdig bool         // oppgaven gir ikke flere poeng for spilleren
@@ -351,29 +375,29 @@ func (a *app) feil(w http.ResponseWriter, r *http.Request, status int, melding s
 	a.vis(w, r, status, "feil", sideData{Tittel: http.StatusText(status), Melding: melding})
 }
 
-// bibelPDF sender Frode-bibelen som PDF (GET og HEAD, med Range og ETag).
-func (a *app) bibelPDF(w http.ResponseWriter, r *http.Request) {
-	if a.bibel == nil {
-		a.feil(w, r, http.StatusNotFound, "PDF-en av bibelen er ikke med i denne versjonen av siden.")
-		return
+// sendPDF sender en innebygd PDF (GET og HEAD, med Range og ETag).
+func (a *app) sendPDF(p *pdfFil, mangler string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if p.data == nil {
+			a.feil(w, r, http.StatusNotFound, mangler)
+			return
+		}
+		h := w.Header()
+		// Nettleserens PDF-visning bruker egne skript og stiler, og den strenge CSP-en
+		// til HTML-sidene stopper den (særlig i Safari). PDF-en er vår egen, faste fil
+		// og sendes med nosniff, så den kan ikke tolkes som noe annet enn PDF.
+		h.Del("Content-Security-Policy")
+		h.Set("Content-Type", "application/pdf")
+		h.Set("Content-Disposition", `inline; filename="`+p.navn+`"`)
+		h.Set("Cache-Control", "no-cache") // spør alltid med ETag: en ny versjon slår gjennom med en gang
+		h.Set("ETag", p.etag)
+		http.ServeContent(w, r, p.navn, time.Time{}, bytes.NewReader(p.data))
 	}
-	h := w.Header()
-	// Nettleserens PDF-visning bruker egne skript og stiler, og den strenge CSP-en
-	// til HTML-sidene stopper den (særlig i Safari). PDF-en er vår egen, faste fil
-	// og sendes med nosniff, så den kan ikke tolkes som noe annet enn PDF.
-	h.Del("Content-Security-Policy")
-	h.Set("Content-Type", "application/pdf")
-	h.Set("Content-Disposition", `inline; filename="frode-bibelen.pdf"`)
-	h.Set("Cache-Control", "no-cache") // spør alltid med ETag: en ny versjon slår gjennom med en gang
-	h.Set("ETag", a.bibelEtag)
-	http.ServeContent(w, r, "frode-bibelen.pdf", time.Time{}, bytes.NewReader(a.bibel))
 }
 
 // vis rendrer til en buffer først, slik at en malfeil aldri gir en halv side.
 func (a *app) vis(w http.ResponseWriter, r *http.Request, status int, side string, d sideData) {
-	if a.bibel != nil {
-		d.BibelKB = (len(a.bibel) + 1023) / 1024
-	}
+	d.BibelKB, d.SporingsarkKB = a.bibel.kb(), a.sporingsark.kb()
 	var buf bytes.Buffer
 	if err := a.sider[side].ExecuteTemplate(&buf, "base", d); err != nil {
 		a.logg.Error("malfeil", "side", side, "feil", err)

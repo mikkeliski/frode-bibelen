@@ -7,12 +7,12 @@ En liten nettside for å øve på **«Hva blir utskriften?»** – oppgave 1 på
 
 Hver oppgave har en fast lenke (`/oppgave/4-cf536939c6056f92`), så du kan dele en bestemt oppgave med andre.
 
-## Frode-bibelen som PDF
+## Frode-bibelen og sporingsarket som PDF
 
-Siden har hele bibelen som PDF på `/frode-bibelen.pdf`, med lenke i menyen og på forsiden. PDF-en bygges fra LaTeX-kildene i rotmappa under `docker build` og bakes inn i programmet, så den er alltid fra samme commit som siden.
+Siden har hele bibelen som PDF på `/frode-bibelen.pdf`, med lenke i menyen og på forsiden. Sporingsarket alene ligger på `/sporingsark.pdf`. Det er én side, slik at du kan skrive ut så mange du trenger til øvingen. Begge bygges fra LaTeX-kildene i rotmappa under `docker build` og bakes inn i programmet, så de er alltid fra samme commit som siden.
 
 - **Aldri med `LesData.h`:** Docker-byggingen kopierer bare `.tex`-filene, og `.dockerignore` holder `LesData.h` utenfor. Frodes kode havner derfor ikke på nettet, selv om filen ligger i mappa di.
-- **Uten Docker** (for eksempel `go run .`) er PDF-en ikke med, og lenkene skjules. Se [`bibel/LESMEG.md`](bibel/LESMEG.md) for å teste den lokalt.
+- **Uten Docker** (for eksempel `go run .`) er PDF-ene ikke med, og lenkene skjules. Se [`bibel/LESMEG.md`](bibel/LESMEG.md) for å teste den lokalt.
 
 ## Poengtavle
 
@@ -66,7 +66,7 @@ På NixOS: `nix-shell -p go --run "go run ."`
 - **Kjører aldri kode.** Hver mal lager både C-programmet og fasiten i Go. Ingen kode blir kompilert eller kjørt på serveren – gcc brukes bare i testene.
 - **Minimalt med data.** Ingen database og ingen innlogging. En oppgave er helt bestemt av ID-en i lenken. Det eneste som lagres, er poengtavla for dem som velger å bli med (se over).
 - **Ingen JavaScript.** Streng `Content-Security-Policy` (`default-src 'none'`), og i tillegg `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: same-origin` og `Cross-Origin-Opener-Policy`/`-Resource-Policy`.
-- **PDF-en** sendes som `application/pdf` med `nosniff`, men uten sidenes CSP, fordi den stopper nettleserens PDF-visning (særlig i Safari). Den er vår egen, faste fil. `ETag` og `Cache-Control: no-cache` gjør at en ny versjon slår gjennom med en gang.
+- **PDF-ene** sendes som `application/pdf` med `nosniff`, men uten sidenes CSP, fordi den stopper nettleserens PDF-visning (særlig i Safari). De er våre egne, faste filer. `ETag` og `Cache-Control: no-cache` gjør at en ny versjon slår gjennom med en gang.
 - **Cross-site-forespørsler avvises** med `http.CrossOriginProtection`.
 - **Alt brukerinnhold escapes** av `html/template`.
 - **Strenge grenser:** skjema maks 16 KiB, svar maks 4 KiB, header maks 16 KiB, og tidsavbrudd på lesing, skriving og inaktive forbindelser.
@@ -178,7 +178,7 @@ oving/
 ├── poengtavle.go    poengtavla og lagringen av den
 ├── maler/           HTML-maler (embeddes i programmet)
 ├── static/          CSS og ikon (embeddes i programmet)
-├── bibel/           Frode-bibelen som PDF (lages i Docker-byggingen, embeddes)
+├── bibel/           bibelen og sporingsarket som PDF (lages i Docker-byggingen, embeddes)
 ├── *_test.go        tester
 ├── deploy/          automatisk oppdatering ved push (skript og systemd-timer)
 └── Dockerfile       bygges fra rotmappa: docker build -f oving/Dockerfile .
